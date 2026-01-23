@@ -122,22 +122,62 @@ function getProgress(studentId, moduleId) {
 
 function saveProgress(data) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Progreso');
+  const sheetData = sheet.getDataRange().getValues();
   const completedStepsStr = data.completedSteps ? data.completedSteps.join(',') : '';
   const completedTimesStr = data.completedTimes ? data.completedTimes.join(',') : '';
 
-  sheet.appendRow([
-    data.studentId,
-    data.moduleId,
-    data.currentStep,
-    completedStepsStr,
-    completedTimesStr,
-    data.timestamp
-  ]);
+  // Buscar si ya existe un registro para este estudiante y módulo
+  let existingRow = -1;
+  for (let i = 1; i < sheetData.length; i++) {
+    if (sheetData[i][0].toString().toUpperCase() === data.studentId.toUpperCase() &&
+        sheetData[i][1] === data.moduleId) {
+      existingRow = i + 1; // +1 porque las filas en Sheets empiezan en 1
+      break;
+    }
+  }
+
+  if (existingRow > 0) {
+    // Actualizar registro existente
+    sheet.getRange(existingRow, 3, 1, 4).setValues([[
+      data.currentStep,
+      completedStepsStr,
+      completedTimesStr,
+      data.timestamp
+    ]]);
+  } else {
+    // Insertar nuevo registro
+    sheet.appendRow([
+      data.studentId,
+      data.moduleId,
+      data.currentStep,
+      completedStepsStr,
+      completedTimesStr,
+      data.timestamp
+    ]);
+  }
 }
 
 function saveQuizAnswer(data) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Respuestas');
+  const sheetData = sheet.getDataRange().getValues();
 
+  // Buscar si ya existe una respuesta para esta pregunta
+  let existingRow = -1;
+  for (let i = 1; i < sheetData.length; i++) {
+    if (sheetData[i][0].toString().toUpperCase() === data.studentId.toUpperCase() &&
+        sheetData[i][1] === data.moduleId &&
+        sheetData[i][2].toString() === data.questionNum.toString()) {
+      existingRow = i + 1;
+      break;
+    }
+  }
+
+  if (existingRow > 0) {
+    // Ya existe, no hacer nada (primera respuesta cuenta)
+    return;
+  }
+
+  // Insertar nueva respuesta
   sheet.appendRow([
     data.studentId,
     data.moduleId,
@@ -169,19 +209,42 @@ function saveTaskResponse(data) {
     ]);
     sheet.getRange(1, 1, 1, 7).setFontWeight('bold');
     sheet.setFrozenRows(1);
-    // Ajustar ancho de columna de respuesta
     sheet.setColumnWidth(4, 400);
   }
 
-  sheet.appendRow([
-    data.studentId,
-    data.moduleId,
-    data.taskId,
-    data.response,
-    data.charCount,
-    data.timedOut ? 'Sí' : 'No',
-    data.timestamp
-  ]);
+  const sheetData = sheet.getDataRange().getValues();
+
+  // Buscar si ya existe una respuesta para esta tarea
+  let existingRow = -1;
+  for (let i = 1; i < sheetData.length; i++) {
+    if (sheetData[i][0].toString().toUpperCase() === data.studentId.toUpperCase() &&
+        sheetData[i][1] === data.moduleId &&
+        sheetData[i][2] === data.taskId) {
+      existingRow = i + 1;
+      break;
+    }
+  }
+
+  if (existingRow > 0) {
+    // Actualizar respuesta existente
+    sheet.getRange(existingRow, 4, 1, 4).setValues([[
+      data.response,
+      data.charCount,
+      data.timedOut ? 'Sí' : 'No',
+      data.timestamp
+    ]]);
+  } else {
+    // Insertar nueva respuesta
+    sheet.appendRow([
+      data.studentId,
+      data.moduleId,
+      data.taskId,
+      data.response,
+      data.charCount,
+      data.timedOut ? 'Sí' : 'No',
+      data.timestamp
+    ]);
+  }
 }
 
 function getTaskResponse(studentId, moduleId, taskId) {
