@@ -4,7 +4,7 @@
 // CONFIGURACIÓN
 // ==========================================
 const CONFIG = {
-    GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxSq1tlrVof4FuvoljwF-brc8Bm2H-2VElhee5j5bl0A_LXjSG47af3STpIp3Nn_Xtb6g/exec',
+    GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxH8dRWkxuHBkyZJXAU7fd-Wh9NgRTXceZYpJl083lbdPNWlZ6HzsfNTfavm0HRYbVwjw/exec',
     MODULE_ID: 'TEBI1105_M1A',
     TOTAL_STEPS: 12,
     STEP_NAMES: [
