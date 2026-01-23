@@ -162,26 +162,77 @@
                         </div>
 
                         <!-- Datos de empleo O*NET -->
-                        <div class="grid md:grid-cols-4 gap-3 mb-6">
-                            <div class="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl p-4 text-center border border-green-200">
-                                <div class="text-2xl font-bold text-emerald-700">$62,630</div>
-                                <div class="text-xs text-gray-600">Salario Mediano Anual</div>
-                                <div class="text-xs text-emerald-600">(2024)</div>
+                        <div class="grid md:grid-cols-2 gap-4 mb-6">
+                            <!-- Salarios EE.UU. vs Puerto Rico -->
+                            <div class="bg-white rounded-xl p-4 border-2 border-blue-200">
+                                <h4 class="font-bold text-blue-800 mb-3 text-center"><i class="fas fa-flag-usa mr-2"></i>Estados Unidos</h4>
+                                <div class="text-center mb-3">
+                                    <div class="text-3xl font-bold text-blue-700">$62,630</div>
+                                    <div class="text-sm text-gray-600">Salario Mediano Anual</div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div class="bg-blue-50 rounded p-2 text-center">
+                                        <div class="font-semibold text-blue-700">$30.11/hr</div>
+                                        <div class="text-gray-500">Por hora</div>
+                                    </div>
+                                    <div class="bg-blue-50 rounded p-2 text-center">
+                                        <div class="font-semibold text-blue-700">68,000</div>
+                                        <div class="text-gray-500">Empleados</div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-4 text-center border border-blue-200">
-                                <div class="text-2xl font-bold text-blue-700">68,000</div>
-                                <div class="text-xs text-gray-600">Empleados en EE.UU.</div>
-                                <div class="text-xs text-blue-600">(2024)</div>
+                            <div class="bg-white rounded-xl p-4 border-2 border-emerald-200">
+                                <h4 class="font-bold text-emerald-800 mb-3 text-center"><i class="fas fa-sun mr-2"></i>Puerto Rico</h4>
+                                <div class="text-center mb-3">
+                                    <div class="text-3xl font-bold text-emerald-700">$31,130</div>
+                                    <div class="text-sm text-gray-600">Salario Mediano Anual</div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div class="bg-emerald-50 rounded p-2 text-center">
+                                        <div class="font-semibold text-emerald-700">$14.96/hr</div>
+                                        <div class="text-gray-500">Por hora</div>
+                                    </div>
+                                    <div class="bg-emerald-50 rounded p-2 text-center">
+                                        <div class="font-semibold text-emerald-700">$31,590</div>
+                                        <div class="text-gray-500">San Juan área</div>
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+
+                        <!-- Rango salarial PR -->
+                        <div class="bg-gradient-to-r from-slate-50 to-emerald-50 rounded-xl p-4 mb-6 border border-slate-200">
+                            <h4 class="font-semibold text-gray-800 mb-3"><i class="fas fa-chart-line mr-2 text-emerald-600"></i>Rango Salarial en Puerto Rico (2024)</h4>
+                            <div class="flex items-center justify-between text-xs mb-2">
+                                <span class="text-gray-500">Percentil 10</span>
+                                <span class="text-gray-500">Percentil 25</span>
+                                <span class="font-bold text-emerald-700">Mediana</span>
+                                <span class="text-gray-500">Percentil 75</span>
+                                <span class="text-gray-500">Percentil 90</span>
+                            </div>
+                            <div class="relative h-3 bg-gray-200 rounded-full mb-2">
+                                <div class="absolute h-3 bg-gradient-to-r from-emerald-300 via-emerald-500 to-emerald-700 rounded-full" style="left: 0%; width: 100%;"></div>
+                            </div>
+                            <div class="flex items-center justify-between text-xs font-medium">
+                                <span class="text-gray-700">$20,610</span>
+                                <span class="text-gray-700">$24,470</span>
+                                <span class="text-emerald-700 font-bold">$31,130</span>
+                                <span class="text-gray-700">$38,130</span>
+                                <span class="text-gray-700">$50,180</span>
+                            </div>
+                        </div>
+
+                        <!-- Stats adicionales -->
+                        <div class="grid md:grid-cols-2 gap-3 mb-6">
                             <div class="bg-gradient-to-br from-purple-50 to-violet-100 rounded-xl p-4 text-center border border-purple-200">
                                 <div class="text-2xl font-bold text-purple-700">7%+</div>
-                                <div class="text-xs text-gray-600">Crecimiento Proyectado</div>
-                                <div class="text-xs text-purple-600">(2024-2034)</div>
+                                <div class="text-xs text-gray-600">Crecimiento Proyectado (2024-2034)</div>
+                                <div class="text-xs text-purple-600">Más rápido que el promedio</div>
                             </div>
                             <div class="bg-gradient-to-br from-orange-50 to-amber-100 rounded-xl p-4 text-center border border-orange-200">
                                 <div class="text-2xl font-bold text-orange-700">39%</div>
                                 <div class="text-xs text-gray-600">Requiere Grado Asociado</div>
-                                <div class="text-xs text-orange-600">(O*NET)</div>
+                                <div class="text-xs text-orange-600">35% diploma de escuela superior</div>
                             </div>
                         </div>
 
