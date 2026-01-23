@@ -4,95 +4,158 @@
 - **Curso:** TEBI 1105 - Introducción a la Tecnología Biomédica
 - **Institución:** Instituto Tecnológico de Puerto Rico
 - **Profesor:** Felipe Hernández Gerena
+- **Audiencia:** BMET's (Biomedical Equipment Technicians) / Medical Equipment Repair
 - **Repositorio:** https://github.com/hernandezgf/tebi_1105
 - **GitHub Pages:** https://hernandezgf.github.io/tebi_1105/
 
-## URLs de los Módulos
+## URLs Importantes
 - **Módulo 1A:** https://hernandezgf.github.io/tebi_1105/Modulo1A_Tecnico_Biomedico_TEBI1105.html
 - **Módulo 1B:** https://hernandezgf.github.io/tebi_1105/Modulo1B_Equipos_Medicos_TEBI1105.html
+- **Google Apps Script:** https://script.google.com/macros/s/AKfycbxH8dRWkxuHBkyZJXAU7fd-Wh9NgRTXceZYpJl083lbdPNWlZ6HzsfNTfavm0HRYbVwjw/exec
 
-## Archivos del Proyecto
-1. `Modulo1A_Tecnico_Biomedico_TEBI1105.html` - Módulo sobre El Técnico Biomédico (BMET)
-2. `Modulo1B_Equipos_Medicos_TEBI1105.html` - Módulo sobre Equipos Médicos
-3. `AppScript_TEBI1105.gs` - Código de Google Apps Script para backend
-4. `config_TEBI1105.js` - Archivo de configuración
-5. `CONFIGURACION_GOOGLE_SHEETS_TEBI1105.txt` - Instrucciones de configuración
+## Estructura de Archivos
+```
+tebi_1105/
+├── Modulo1A_Tecnico_Biomedico_TEBI1105.html
+├── Modulo1B_Equipos_Medicos_TEBI1105.html
+├── css/
+│   └── styles.css
+├── js/
+│   └── app.js
+├── AppScript_TEBI1105.gs
+├── config_TEBI1105.js
+├── CONFIGURACION_GOOGLE_SHEETS_TEBI1105.txt
+├── CONTEXTO_PROYECTO.md
+└── .gitignore
+```
+
+## Configuración del Módulo 1A
+
+### Tiempos por Paso (Total: 48 minutos)
+| Paso | Tema | Tiempo |
+|------|------|--------|
+| 1 | Introducción | 3 min |
+| 2 | DOT vs O*NET | 5 min |
+| 3 | Categorías BMET | 3 min |
+| 4 | Video BMET | 7 min |
+| 5 | Características | 1 min |
+| 6 | Ing. Biomédica vs Clínica | 1 min |
+| 7 | Video Carrera | 5 min |
+| 8 | Presentación | 10 min |
+| 9 | Conceptos | 2 min |
+| 10 | Equipos | 2 min |
+| 11 | Inspección | 2 min |
+| 12 | Autoevaluación | 10 min |
+
+### Funcionalidades Implementadas
+1. **Temporizador obligatorio:** No puede avanzar hasta completar el tiempo
+2. **Persistencia de tiempos:** Guarda en localStorage y Google Sheets
+3. **Modo estudio:** Si ya completó el tiempo, puede navegar libremente
+4. **Comparativa DOT vs O*NET:** Incluye datos salariales de EE.UU. y Puerto Rico
+5. **Imágenes reales:** Equipos de prueba con fotos de Wikimedia
+6. **Ejemplos de manuales:** Philips, GE, Medtronic, B. Braun
+
+### Datos Salariales O*NET (49-9062.00)
+**Estados Unidos (2024):**
+- Mediana: $62,630/año ($30.11/hr)
+- Empleados: 68,000
+- Crecimiento: 7%+
+
+**Puerto Rico (2024):**
+- Mediana: $31,130/año ($14.96/hr)
+- Área San Juan: $31,590/año
+- Rango: $20,610 - $50,180
+
+## Configuración Google Sheets
+
+### Pestaña "Estudiantes"
+| ID | Nombre | Email |
+|----|--------|-------|
+
+### Pestaña "Progreso"
+| studentId | moduleId | currentStep | completedSteps | completedTimes | timestamp |
+|-----------|----------|-------------|----------------|----------------|-----------|
+
+### Pestaña "Respuestas"
+| studentId | moduleId | questionNum | answer | isCorrect | timestamp |
+|-----------|----------|-------------|--------|-----------|-----------|
+
+### Pestaña "Tareas" (se crea automáticamente)
+| studentId | moduleId | taskId | response | charCount | timedOut | timestamp |
+|-----------|----------|--------|----------|-----------|----------|-----------|
+
+## Características del Apps Script
+
+### Evita Duplicados
+- **saveProgress:** Actualiza registro existente (1 fila por estudiante/módulo)
+- **saveQuizAnswer:** No guarda si ya existe respuesta
+- **saveTaskResponse:** Actualiza respuesta existente
+
+### Endpoints
+- `GET ?action=verify&studentId=X` - Verificar estudiante
+- `GET ?action=getProgress&studentId=X&moduleId=Y` - Obtener progreso
+- `GET ?action=getTask&studentId=X&moduleId=Y&taskId=Z` - Obtener tarea
+- `POST saveProgress` - Guardar progreso
+- `POST saveQuizAnswer` - Guardar respuesta quiz
+- `POST saveTaskResponse` - Guardar tarea escrita
 
 ## Cambios Realizados (23 enero 2026)
 
-### 1. Creación del Repositorio
-- Repositorio creado en cuenta `hernandezgf` (no felipillo55)
-- GitHub Pages habilitado y funcionando
+### Sesión 1
+- Creación del repositorio en cuenta `hernandezgf`
+- Corrección del HTML (script tag faltante)
+- Modal de login activo
+- Apps Script adaptado de TEBI 2035
 
-### 2. Corrección del HTML (Modulo1A)
-- Se arregló error donde el código JavaScript se mostraba visible en la página
-- Faltaba la etiqueta `<script>` y las variables iniciales
-- Se agregaron los botones de navegación (Anterior/Siguiente) que faltaban
-
-### 3. Modal de Login
-- El modal de login está ACTIVO (pide ID de estudiante)
-- Para desactivarlo: agregar clase `modal-hidden` al div `id="login-modal"`
-
-### 4. Google Apps Script
-- Se creó `AppScript_TEBI1105.gs` adaptado del código funcional de TEBI 2035
-- Soporta: verificación de estudiantes, progreso, quiz, y tareas escritas
-
-## PENDIENTE POR HACER
-
-### 1. Configurar Google Sheets
-Crear un Google Sheet con estas pestañas:
-- **Estudiantes** (columnas: ID, Nombre, Email)
-- **Progreso** (columnas: studentId, moduleId, currentStep, completedSteps, timestamp)
-- **Respuestas** (columnas: studentId, moduleId, questionNum, answer, isCorrect, timestamp)
-- **Tareas** (se crea automáticamente)
-
-### 2. Implementar Apps Script
-1. Abrir Google Sheet > Extensiones > Apps Script
-2. Pegar contenido de `AppScript_TEBI1105.gs`
-3. Implementar > Nueva implementación > Aplicación web
-4. Ejecutar como: "Yo" | Acceso: "Cualquier usuario"
-5. Copiar la URL generada
-
-### 3. Actualizar URL en HTML
-En `Modulo1A_Tecnico_Biomedico_TEBI1105.html`, buscar y reemplazar:
-```javascript
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx.../exec';
-```
-Con la nueva URL generada del Apps Script.
-
-### 4. Revisar Módulo 1B
-- Verificar que tenga la misma estructura corregida
-- Asegurar que el modal de login funcione
-- Actualizar la URL del Apps Script si es necesario
+### Sesión 2
+- Separación de código en archivos (css/styles.css, js/app.js)
+- Comparativa DOT 019.261-010 vs O*NET 49-9062.00
+- Datos salariales de Puerto Rico
+- Tiempo del paso 2 aumentado a 5 minutos
+- Imágenes reales de equipos de prueba (Fluke, Tektronix, etc.)
+- Ejemplos de manuales de fabricantes
+- Bloqueo de navegación hasta completar tiempo
+- Persistencia de `completedTimes` en localStorage y Google Sheets
+- Lógica anti-duplicados en Apps Script
+- URL de Apps Script actualizada
+- Agregado .gitignore (excluye .claude/)
 
 ## Notas Técnicas
 
-### Estructura del Modal de Login
-```html
-<div id="login-modal" class="modal-overlay">
-    <!-- Para ocultar: agregar clase "modal-hidden" -->
-</div>
+### Variables en js/app.js
+```javascript
+const CONFIG = {
+    GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxH8d.../exec',
+    MODULE_ID: 'TEBI1105_M1A',
+    TOTAL_STEPS: 12,
+    STEP_TIMES: { 1: 180, 2: 300, ... }
+};
 ```
 
-### Variables JavaScript Importantes
+### Estado de la Aplicación
 ```javascript
-const GOOGLE_SCRIPT_URL = '...';  // URL del Apps Script
-const MODULE_ID = 'TEBI1105_M1A'; // ID del módulo actual
+let state = {
+    currentStep: 1,
+    completedSteps: new Set(),    // Pasos visitados
+    completedTimes: new Set(),    // Pasos con tiempo completado
+    quizAnswers: {},
+    isOnlineMode: false,
+    timerCompleted: false
+};
 ```
 
 ### Cuentas de GitHub
-- **hernandezgf** - Cuenta del proyecto TEBI 1105 (email: hernandezgf@itec.pr)
-- **felipillo55** - Otra cuenta (no usar para este proyecto)
+- **hernandezgf** - Cuenta del proyecto (hernandezgf@itec.pr)
+- **felipillo55** - No usar para este proyecto
 
-## Comandos Útiles
+## Pendiente
 
-```bash
-# Ver estado del repo
-git status
+### Módulo 1B
+- Aplicar misma estructura que Módulo 1A
+- Actualizar URL del Apps Script
+- Configurar tiempos por paso
 
-# Subir cambios
-git add . && git commit -m "mensaje" && git push
-
-# Cambiar cuenta de GitHub CLI
-gh auth login
-```
+### Mejoras Futuras
+- Dashboard para profesor (ver progreso de todos los estudiantes)
+- Exportar datos a Excel
+- Certificado de completación
