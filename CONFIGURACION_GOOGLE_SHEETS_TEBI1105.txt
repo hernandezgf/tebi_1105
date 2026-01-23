@@ -1,0 +1,260 @@
+================================================================================
+INSTRUCCIONES PARA CONFIGURAR GOOGLE SHEETS - TEBI 1105
+================================================================================
+
+PASO 1: CREAR LA HOJA DE GOOGLE
+--------------------------------------------------------------------------------
+1. Ve a https://sheets.google.com
+2. Crea una nueva hoja llamada "TEBI1105_Datos"
+3. Crea 4 pestañas con estos nombres exactos:
+   - Estudiantes
+   - Progreso
+   - Respuestas
+   - Tareas
+
+4. En "Estudiantes", agrega estos encabezados en la fila 1:
+   | A           | B        | C         |
+   | studentId   | nombre   | email     |
+
+5. Agrega tus estudiantes debajo:
+   | A           | B                  | C                    |
+   | A12345      | Juan Pérez         | juan@email.com       |
+
+6. En "Progreso", agrega estos encabezados:
+   | A           | B          | C             | D                | E            |
+   | studentId   | moduleId   | currentStep   | completedSteps   | timestamp    |
+
+7. En "Respuestas", agrega estos encabezados:
+   | A           | B          | C              | D          | E            | F            |
+   | studentId   | moduleId   | questionNum    | answer     | isCorrect    | timestamp    |
+
+8. En "Tareas", agrega estos encabezados:
+   | A           | B          | C        | D          | E           | F          | G            |
+   | studentId   | moduleId   | taskId   | response   | charCount   | timedOut   | timestamp    |
+
+
+PASO 2: CREAR EL GOOGLE APPS SCRIPT
+--------------------------------------------------------------------------------
+1. En tu hoja de Google, ve a: Extensiones > Apps Script
+2. Borra todo el código que aparece
+3. Copia y pega el siguiente código:
+
+================================================================================
+// INICIO DEL CÓDIGO - COPIAR DESDE AQUÍ
+================================================================================
+
+const SPREADSHEET_ID = SpreadsheetApp.getActiveSpreadsheet().getId();
+
+function doGet(e) {
+  if (!e || !e.parameter) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, error: 'No se recibieron parámetros' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  try {
+    const action = e.parameter.action;
+    const studentId = e.parameter.studentId;
+    let result = { success: false, error: 'Acción no válida' };
+
+    if (action === 'verify') {
+      result = verifyStudent(studentId);
+    } else if (action === 'getProgress') {
+      const moduleId = e.parameter.moduleId;
+      result = getProgress(studentId, moduleId);
+    } else if (action === 'getTask') {
+      const moduleId = e.parameter.moduleId;
+      const taskId = e.parameter.taskId;
+      result = getTaskResponse(studentId, moduleId, taskId);
+    }
+
+    return ContentService
+      .createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const action = data.action;
+
+    if (action === 'saveProgress') {
+      saveProgress(data);
+    } else if (action === 'saveQuizAnswer') {
+      saveQuizAnswer(data);
+    } else if (action === 'saveTaskResponse') {
+      saveTaskResponse(data);
+    }
+
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function verifyStudent(studentId) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Estudiantes');
+  const data = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0].toString().toUpperCase() === studentId.toUpperCase()) {
+      return {
+        success: true,
+        studentId: data[i][0],
+        name: data[i][1],
+        email: data[i][2]
+      };
+    }
+  }
+
+  return { success: false, error: 'Estudiante no encontrado' };
+}
+
+function getProgress(studentId, moduleId) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Progreso');
+  const data = sheet.getDataRange().getValues();
+
+  for (let i = data.length - 1; i >= 1; i--) {
+    if (data[i][0].toString().toUpperCase() === studentId.toUpperCase() &&
+        data[i][1] === moduleId) {
+      return {
+        success: true,
+        progress: {
+          currentStep: data[i][2],
+          completedSteps: data[i][3] ? data[i][3].toString().split(',').map(Number) : [],
+          timestamp: data[i][4]
+        }
+      };
+    }
+  }
+
+  return { success: true, progress: null };
+}
+
+function saveProgress(data) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Progreso');
+  const completedStepsStr = data.completedSteps ? data.completedSteps.join(',') : '';
+
+  sheet.appendRow([
+    data.studentId,
+    data.moduleId,
+    data.currentStep,
+    completedStepsStr,
+    data.timestamp
+  ]);
+}
+
+function saveQuizAnswer(data) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Respuestas');
+
+  sheet.appendRow([
+    data.studentId,
+    data.moduleId,
+    data.questionNum,
+    data.answer,
+    data.isCorrect,
+    data.timestamp
+  ]);
+}
+
+function saveTaskResponse(data) {
+  let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Tareas');
+
+  if (!sheet) {
+    sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('Tareas');
+    sheet.appendRow(['studentId', 'moduleId', 'taskId', 'response', 'charCount', 'timedOut', 'timestamp']);
+    sheet.getRange(1, 1, 1, 7).setFontWeight('bold');
+    sheet.setFrozenRows(1);
+    sheet.setColumnWidth(4, 400);
+  }
+
+  sheet.appendRow([
+    data.studentId,
+    data.moduleId,
+    data.taskId,
+    data.response,
+    data.charCount,
+    data.timedOut ? 'Sí' : 'No',
+    data.timestamp
+  ]);
+}
+
+function getTaskResponse(studentId, moduleId, taskId) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Tareas');
+
+  if (!sheet) {
+    return { success: true, task: null };
+  }
+
+  const data = sheet.getDataRange().getValues();
+
+  for (let i = data.length - 1; i >= 1; i--) {
+    if (data[i][0].toString().toUpperCase() === studentId.toUpperCase() &&
+        data[i][1] === moduleId &&
+        data[i][2] === taskId) {
+      return {
+        success: true,
+        task: {
+          response: data[i][3],
+          charCount: data[i][4],
+          timedOut: data[i][5] === 'Sí',
+          timestamp: data[i][6]
+        }
+      };
+    }
+  }
+
+  return { success: true, task: null };
+}
+
+================================================================================
+// FIN DEL CÓDIGO
+================================================================================
+
+
+PASO 3: DESPLEGAR EL SCRIPT
+--------------------------------------------------------------------------------
+1. Guarda el proyecto (Ctrl+S)
+2. Clic en "Implementar" > "Nueva implementación"
+3. Tipo: "Aplicación web"
+4. Configura:
+   - Descripción: "API TEBI 1105"
+   - Ejecutar como: "Yo"
+   - Quién tiene acceso: "Cualquier usuario"
+5. Clic en "Implementar"
+6. Autoriza los permisos
+7. COPIA LA URL (ej: https://script.google.com/macros/s/XXXX/exec)
+
+
+PASO 4: CONFIGURAR LOS MÓDULOS HTML
+--------------------------------------------------------------------------------
+Los módulos TEBI 1105 actualmente usan localStorage (modo local).
+Para habilitar Google Sheets, necesitas modificar el JavaScript en cada módulo
+y agregar la URL del script.
+
+Si deseas integración completa con Google Sheets, será necesario:
+1. Actualizar los módulos HTML para usar los archivos JS externos
+2. Configurar la URL en config_TEBI1105.js
+
+
+MÓDULOS INCLUIDOS:
+--------------------------------------------------------------------------------
+- TEBI1105_M1A: El Técnico Biomédico (12 pasos)
+- TEBI1105_M1B: Equipos Médicos (11 pasos)
+
+
+NOTAS:
+--------------------------------------------------------------------------------
+- Los módulos funcionan en "modo local" sin Google Sheets (guardan en navegador)
+- Para modo online, configurar la URL del Apps Script
+- El código del Apps Script es el mismo que TEBI 2035
+================================================================================

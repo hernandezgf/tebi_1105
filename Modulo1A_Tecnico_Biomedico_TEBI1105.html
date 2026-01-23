@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulo 1A: El Técnico Biomédico - TEBI 1105</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .step-content { display: none; animation: fadeIn 0.5s ease-in-out; }
+        .step-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .stepper-item.completed .stepper-circle { background-color: #10b981; border-color: #10b981; }
+        .stepper-item.active .stepper-circle { background-color: #059669; border-color: #059669; box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.3); }
+        .concept-card { transition: all 0.3s ease; }
+        .concept-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); }
+        .quiz-option { transition: all 0.2s ease; }
+        .quiz-option:hover:not(.selected):not(.correct):not(.incorrect) { background-color: #ecfdf5; border-color: #059669; }
+        .quiz-option.correct { background-color: #d1fae5; border-color: #10b981; }
+        .quiz-option.incorrect { background-color: #fee2e2; border-color: #ef4444; }
+        .progress-bar { transition: width 0.5s ease; }
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: white; border-radius: 1rem; padding: 2rem; max-width: 400px; width: 90%; }
+        .modal-hidden { display: none !important; }
+        .user-badge { background: linear-gradient(135deg, #059669, #047857); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; }
+        .level-card { transition: all 0.3s ease; }
+        .level-card:hover { transform: scale(1.02); }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Modal de Login -->
+    <div id="login-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-user-graduate text-emerald-600 text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800">Bienvenido</h2>
+                <p class="text-gray-600 text-sm mt-1">TEBI 1105 - Módulo 1A</p>
+            </div>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">ID de Estudiante</label>
+                    <input type="text" id="student-id" placeholder="Ej: A12345" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500" required>
+                </div>
+                <button type="submit" class="w-full py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700">
+                    <span>Ingresar</span> <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-emerald-700 to-emerald-900 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold">TEBI 1105</h1>
+                    <p class="text-emerald-200 text-sm">Introducción a la Tecnología Biomédica</p>
+                </div>
+                <div class="mt-4 md:mt-0 text-right">
+                    <div id="user-info" class="hidden mb-2">
+                        <span class="user-badge"><i class="fas fa-user mr-1"></i><span id="user-name">Estudiante</span></span>
+                    </div>
+                    <p class="text-sm text-emerald-200">Instituto Tecnológico de Puerto Rico</p>
+                    <p class="text-xs text-emerald-300">Prof. Felipe Hernández Gerena</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Progress Bar -->
+    <div class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-gray-600">Progreso del módulo</span>
+                <span id="progress-text" class="text-sm font-semibold text-emerald-600">0%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div id="progress-bar" class="progress-bar bg-emerald-600 h-2 rounded-full" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Stepper Sidebar -->
+            <aside class="lg:w-1/4">
+                <div class="bg-white rounded-xl shadow-md p-6 sticky top-24">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="fas fa-list-ol mr-2 text-emerald-600"></i>Contenido
+                    </h3>
+                    <div class="space-y-3" id="stepper"></div>
+                </div>
+            </aside>
+
+            <!-- Content Area -->
+            <section class="lg:w-3/4">
+                <div class="bg-white rounded-xl shadow-md p-6 md:p-8">
+                    <!-- Step 1: Introducción -->
+                    <div class="step-content active" data-step="1">
+                        <div class="mb-8">
+                            <span class="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-4">Unidad I - Módulo 1A</span>
+                            <h2 class="text-3xl font-bold text-gray-800 mb-4">El Técnico Biomédico (BMET)</h2>
+                            <p class="text-gray-600 text-lg">Bienvenido al primer módulo del curso TEBI 1105. Conocerás la profesión del Técnico en Equipos Biomédicos, sus funciones, categorías y el impacto en el cuidado de la salud.</p>
+                        </div>
+                        <div class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl p-6 mb-8">
+                            <h3 class="text-xl font-semibold mb-3"><i class="fas fa-bullseye mr-2"></i>Objetivos de Aprendizaje</h3>
+                            <ul class="space-y-2">
+                                <li class="flex items-start"><i class="fas fa-check-circle mr-2 mt-1"></i><span>Identificar las responsabilidades del Técnico Biomédico según el DOT 019.261-010</span></li>
+                                <li class="flex items-start"><i class="fas fa-check-circle mr-2 mt-1"></i><span>Distinguir entre las categorías de BMET (I, II, III, Supervisor, LES, RES)</span></li>
+                                <li class="flex items-start"><i class="fas fa-check-circle mr-2 mt-1"></i><span>Comprender la diferencia entre Ingeniería Biomédica e Ingeniería Clínica</span></li>
+                                <li class="flex items-start"><i class="fas fa-check-circle mr-2 mt-1"></i><span>Conocer los conceptos de reparación, calibración y mantenimiento</span></li>
+                            </ul>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-6 mb-8">
+                            <div class="concept-card bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-6">
+                                <div class="text-emerald-600 text-3xl mb-3"><i class="fas fa-user-cog"></i></div>
+                                <h4 class="font-semibold text-gray-800 mb-2">¿Qué es un BMET?</h4>
+                                <p class="text-gray-600 text-sm">Técnico en Equipos Biomédicos: profesional responsable de instalar, calibrar, mantener y reparar equipos médicos.</p>
+                            </div>
+                            <div class="concept-card bg-gradient-to-br from-teal-50 to-teal-100 rounded-xl p-6">
+                                <div class="text-teal-600 text-3xl mb-3"><i class="fas fa-hospital"></i></div>
+                                <h4 class="font-semibold text-gray-800 mb-2">Impacto en la Salud</h4>
+                                <p class="text-gray-600 text-sm">Su trabajo garantiza equipos funcionales, impactando la seguridad del paciente y calidad de atención.</p>
+                            </div>
+                        </div>
+                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+                            <p class="text-yellow-800"><i class="fas fa-lightbulb mr-2"></i><strong>DOT 019.261-010:</strong> El Técnico Biomédico es responsable de la instalación, calibración, mantenimiento y reparación de dispositivos médicos.</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Responsabilidades -->
+                    <div class="step-content" data-step="2">
+                        <div class="mb-8">
+                            <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-4">Paso 2</span>
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4">DOT 019.261-010: Responsabilidades</h2>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-6 mb-8">
+                            <div class="bg-white border-2 border-emerald-200 rounded-xl p-5">
+                                <div class="flex items-center mb-3">
+                                    <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mr-3"><i class="fas fa-wrench text-emerald-600"></i></div>
+                                    <h4 class="font-semibold text-gray-800">Técnicas</h4>
+                                </div>
+                                <ul class="text-gray-600 text-sm space-y-1">
+                                    <li><i class="fas fa-check text-emerald-500 mr-2"></i>Instalación de equipos</li>
+                                    <li><i class="fas fa-check text-emerald-500 mr-2"></i>Calibración</li>
+                                    <li><i class="fas fa-check text-emerald-500 mr-2"></i>Mantenimiento preventivo</li>
+                                    <li><i class="fas fa-check text-emerald-500 mr-2"></i>Reparación</li>
+                                </ul>
+                            </div>
+                            <div class="bg-white border-2 border-blue-200 rounded-xl p-5">
+                                <div class="flex items-center mb-3">
+                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3"><i class="fas fa-brain text-blue-600"></i></div>
+                                    <h4 class="font-semibold text-gray-800">Habilidades</h4>
+                                </div>
+                                <ul class="text-gray-600 text-sm space-y-1">
+                                    <li><i class="fas fa-check text-blue-500 mr-2"></i>Electrónica</li>
+                                    <li><i class="fas fa-check text-blue-500 mr-2"></i>Mecánica</li>
+                                    <li><i class="fas fa-check text-blue-500 mr-2"></i>Informática</li>
+                                    <li><i class="fas fa-check text-blue-500 mr-2"></i>Interpretación de manuales</li>
+                                </ul>
+                            </div>
+                            <div class="bg-white border-2 border-purple-200 rounded-xl p-5">
+                                <div class="flex items-center mb-3">
+                                    <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3"><i class="fas fa-clipboard-check text-purple-600"></i></div>
+                                    <h4 class="font-semibold text-gray-800">Control de Calidad</h4>
+                                </div>
+                                <ul class="text-gray-600 text-sm space-y-1">
+                                    <li><i class="fas fa-check text-purple-500 mr-2"></i>Normativas</li>
+                                    <li><i class="fas fa-check text-purple-500 mr-2"></i>Pruebas de seguridad</li>
+                                    <li><i class="fas fa-check text-purple-500 mr-2"></i>Documentación</li>
+                                </ul>
+                            </div>
+                            <div class="bg-white border-2 border-orange-200 rounded-xl p-5">
+                                <div class="flex items-center mb-3">
+                                    <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mr-3"><i class="fas fa-users text-orange-600"></i></div>
+                                    <h4 class="font-semibold text-gray-800">Colaboración</h4>
+                                </div>
+                                <ul class="text-gray-600 text-sm space-y-1">
+                                    <li><i class="fas fa-check text-orange-500 mr-2"></i>Personal médico</li>
+                                    <li><i class="fas fa-check text-orange-500 mr-2"></i>Capacitación</li>
+                                    <li><i class="fas fa-check text-orange-500 mr-2"></i>Trabajo en equipo</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Step 3: Categorías BMET -->
+                    <div class="step-content" data-step="3">
+                        <div class="mb-8">
+                            <span class="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium mb-4">Paso 3</span>
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Categorías y Niveles del BMET</h2>
+                        </div>
+                        <div class="space-y-4 mb-8">
+                            <div class="level-card bg-gradient-to-r from-gray-50 to-emerald-50 rounded-xl p-5 border-l-4 border-emerald-400">
+                                <div class="flex items-start">
+                                    <div class="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center text-white font-bold mr-4">I</div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-800">BMET I - Nivel Inicial</h4>
+                                        <p class="text-emerald-600 text-sm">&lt; 4 años experiencia | Sin certificación</p>
+                                        <p class="text-gray-600 text-sm mt-1">Trabajo bajo supervisión: mantenimiento preventivo, reparaciones básicas, pruebas de seguridad.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="level-card bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-5 border-l-4 border-blue-400">
+                                <div class="flex items-start">
+                                    <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold mr-4">II</div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-800">BMET II - Nivel Intermedio</h4>
+                                        <p class="text-blue-600 text-sm">~8 años experiencia | Grado Asociado</p>
+                                        <p class="text-gray-600 text-sm mt-1">Trabajo independiente, conocimiento de esquemas electrónicos, equipos complejos.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="level-card bg-gradient-to-r from-gray-50 to-purple-50 rounded-xl p-5 border-l-4 border-purple-400">
+                                <div class="flex items-start">
+                                    <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold mr-4">III</div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-800">BMET III - Nivel Avanzado</h4>
+                                        <p class="text-purple-600 text-sm">~12 años experiencia | Certificado CBET</p>
+                                        <p class="text-gray-600 text-sm mt-1">Altamente especializado, resuelve problemas complejos, conocimiento integral.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="level-card bg-gradient-to-r from-gray-50 to-orange-50 rounded-xl p-5 border-l-4 border-orange-400">
+                                <div class="flex items-start">
+                                    <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white mr-4"><i class="fas fa-users"></i></div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-800">BMET Supervisor</h4>
+                                        <p class="text-orange-600 text-sm">~13 años experiencia | Bachillerato</p>
+                                        <p class="text-gray-600 text-sm mt-1">Supervisa técnicos, gestión, liderazgo, asignación de tareas.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4"><i class="fas fa-star mr-2 text-yellow-500"></i>Especialistas</h3>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="bg-cyan-50 rounded-xl p-4 border border-cyan-200">
+                                <h4 class="font-bold text-gray-800"><i class="fas fa-flask text-cyan-600 mr-2"></i>LES</h4>
+                                <p class="text-cyan-600 text-sm">Laboratory Equipment Specialist</p>
+                                <p class="text-gray-600 text-sm mt-1">Equipos de laboratorio. Certificación CLES.</p>
+                            </div>
+                            <div class="bg-rose-50 rounded-xl p-4 border border-rose-200">
+                                <h4 class="font-bold text-gray-800"><i class="fas fa-x-ray text-rose-600 mr-2"></i>RES</h4>
+                                <p class="text-rose-600 text-sm">Radiology Equipment Specialist</p>
+                                <p class="text-gray-600 text-sm mt-1">Rayos X, MRI, CT. Certificación CRES.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Video 1 -->
+                    <div class="step-content" data-step="4">
+                        <div class="mb-8">
+                            <span class="inline-block px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium mb-4">Paso 4</span>
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Video: ¿Qué es un BMET?</h2>
+                        </div>
+                        <div class="bg-gray-100 rounded-xl p-4 mb-6">
+                            <div class="video-container rounded-lg overflow-hidden">
+                                <iframe src="https://www.youtube.com/embed/ZG81JoEZDVc" title="¿Qué es un BMET?" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>
+                        </div>
+                        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                            <h4 class="font-semibold text-emerald-800 mb-2"><i class="fas fa-clipboard-list mr-2"></i>Puntos clave:</h4>
+                            <ul class="text-emerald-700 text-sm space-y-1">
+                                <li><i class="fas fa-check mr-2"></i>El BMET es esencial para el funcionamiento hospitalario</li>
+                                <li><i class="fas fa-check mr-2"></i>Trabaja con tecnología de punta</li>
+                                <li><i class="fas fa-check mr-2"></i>Combina electrónica, mecánica e informática</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Características -->
+                    <div class="step-content" data-step="5">
+                        <div class="mb-8">
+                            <span class="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium mb-4">Paso 5</span>
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Características Ideales del BMET</h2>
+                        </div>
+                        <div class="grid md:grid-cols-3 gap-6 mb-8">
+                            <div class="concept-card bg-white rounded-xl p-6 shadow-lg border-t-4 border-emerald-500 text-center">
+                                <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-tools text-emerald-600 text-2xl"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-800 mb-2">Práctico</h4>
+                                <p class="text-gray-600 text-sm">Aplica conocimientos teóricos en situaciones reales.</p>
+                            </div>
+                            <div class="concept-card bg-white rounded-xl p-6 shadow-lg border-t-4 border-blue-500 text-center">
+                                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-brain text-blue-600 text-2xl"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-800 mb-2">Lógico</h4>
+                                <p class="text-gray-600 text-sm">Pensamiento analítico para diagnosticar problemas.</p>
+                            </div>
+                            <div class="concept-card bg-white rounded-xl p-6 shadow-lg border-t-4 border-purple-500 text-center">
+                                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-folder-open text-purple-600 text-2xl"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-800 mb-2">Organizado</h4>
+                                <p class="text-gray-600 text-sm">Mantiene registros precisos y documenta procedimientos.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Step 6: Ing Biomédica vs Clínica -->
+                    <div class="step-content" data-step="6">
+                        <div class="mb-8">
+                            <span class="inline-block px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm font-medium mb-4">Paso 6</span>
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Ingeniería Biomédica vs Ingeniería Clínica</h2>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-6 mb-6">
+                            <div class="bg-white border-2 border-blue-300 rounded-xl overflow-hidden">
+                                <div class="bg-blue-500 text-white p-4">
+                                    <h3 class="text-lg font-bold"><i class="fas fa-microscope mr-2"></i>Ingeniería Biomédica</h3>
+                                    <p class="text-blue-100 text-sm">Investigación y Desarrollo</p>
+                                </div>
+                                <div class="p-4">
+                                    <ul class="text-gray-600 text-sm space-y-1">
+                                        <li><i class="fas fa-flask text-blue-500 mr-2"></i>Investigación y desarrollo</li>
+                                        <li><i class="fas fa-cogs text-blue-500 mr-2"></i>Diseño de equipos médicos</li>
+                                        <li><i class="fas fa-dna text-blue-500 mr-2"></i>Prótesis y órganos artificiales</li>
+                                        <li><i class="fas fa-vial text-blue-500 mr-2"></i>Biotecnología</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="bg-white border-2 border-emerald-300 rounded-xl overflow-hidden">
+                                <div class="bg-emerald-500 text-white p-4">
+                                    <h3 class="text-lg font-bold"><i class="fas fa-hospital-user mr-2"></i>Ingeniería Clínica</h3>
+                                    <p class="text-emerald-100 text-sm">Implementación y Gestión</p>
+                                </div>
+                                <div class="p-4">
+                                    <ul class="text-gray-600 text-sm space-y-1">
+                                        <li><i class="fas fa-tools text-emerald-500 mr-2"></i>Instalación y mantenimiento</li>
+                                        <li><i class="fas fa-sliders-h text-emerald-500 mr-2"></i>Calibración de equipos</li>
+                                        <li><i class="fas fa-chalkboard-teacher text-emerald-500 mr-2"></i>Capacitación</li>
+                                        <li><i class="fas fa-shield-alt text-emerald-500 mr-2"></i>Seguridad del paciente</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+                            <p class="text-yellow-800 text-sm"><i class="fas fa-lightbulb mr-2"></i><strong>Diferencia clave:</strong> Biomédica = investigación; Clínica = implementación hospitalaria.</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 7: Video 2 -->
+                    <div class="step-content" data-step="7">
+                        <div class="mb-8">
+                            <span class="inline-block px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium mb-4">Paso 7</span>
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Video: Carrera del Técnico Biomédico</h2>
+                        </div>
+                        <div class="bg-gray-100 rounded-xl p-4 mb-6">
+                            <div class="video-container rounded-lg overflow-hidden">
+                                <iframe src="https://www.youtube.com/embed/cEfiLLc3oZo" title="Carrera BMET" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>
+                        </div>
+                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                            <h4 class="font-semibold text-blue-800 mb-2"><i class="fas fa-graduation-cap mr-2"></i>Oportunidades:</h4>
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                <div><i class="fas fa-hospital text-blue-500 mr-2"></i>Hospitales y Clínicas</div>
+                                <div><i class="fas fa-building text-blue-500 mr-2"></i>Compañías de Servicio</div>
+                                <div><i class="fas fa-user-tie text-blue-500 mr-2"></i>Representante de Ventas</div>
+                                <div><i class="fas fa-briefcase text-blue-500 mr-2"></i>Autoempleo</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 8: Presentación -->
+                    <div class="step-content" data-step="8">
+                        <div class="mb-8">
+                            <span class="inline-block px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium mb-4">Paso 8</span>
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Presentación: Conceptos de Calibración</h2>
+                        </div>
+                        <div class="bg-gray-100 rounded-xl p-4 mb-6">
+                            <div class="bg-white rounded-lg shadow-lg overflow-hidden" style="height: 450px;">
+                                <iframe src="https://felipillo55.github.io/presentacion-bmet/tema5-calibracion.html" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+                            </div>
+                        </div>
+                        <div class="bg-orange-50 border border-orange-200 rounded-xl p-4">
+                            <p class="text-orange-700 text-sm"><i class="fas fa-info-circle mr-2"></i>Usa las flechas para navegar. Puedes ver en pantalla completa.</p>
+                        </div>
+                    </div>
+                    <!-- Step 9: Conceptos Fundamentales -->
+                    <div class="step-content" data-step="9">
+                        <div class="mb-8">
+                            <span class="inline-block px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-sm font-medium mb-4">Paso 9</span>
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Conceptos Fundamentales</h2>
+                        </div>
+                        <!-- Reparación -->
+                        <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-5 mb-4 border-l-4 border-red-500">
+                            <h3 class="text-lg font-bold text-gray-800 mb-3"><i class="fas fa-wrench text-red-500 mr-2"></i>Reparación</h3>
+                            <p class="text-gray-600 text-sm mb-3">Proceso de restablecer el correcto funcionamiento de un equipo.</p>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                <div class="bg-white rounded p-2 text-center text-sm"><span class="w-6 h-6 bg-red-500 text-white rounded-full inline-flex items-center justify-center text-xs mr-1">1</span>Diagnosticar</div>
+                                <div class="bg-white rounded p-2 text-center text-sm"><span class="w-6 h-6 bg-red-500 text-white rounded-full inline-flex items-center justify-center text-xs mr-1">2</span>Localizar</div>
+                                <div class="bg-white rounded p-2 text-center text-sm"><span class="w-6 h-6 bg-red-500 text-white rounded-full inline-flex items-center justify-center text-xs mr-1">3</span>Aislar</div>
+                                <div class="bg-white rounded p-2 text-center text-sm"><span class="w-6 h-6 bg-red-500 text-white rounded-full inline-flex items-center justify-center text-xs mr-1">4</span>Determinar</div>
+                            </div>
+                        </div>
+                        <!-- Calibración -->
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 mb-4 border-l-4 border-blue-500">
+                            <h3 class="text-lg font-bold text-gray-800 mb-3"><i class="fas fa-sliders-h text-blue-500 mr-2"></i>Calibración</h3>
+                            <p class="text-gray-600 text-sm mb-3">Comparar un equipo con un <strong>estándar</strong> para que funcione según parámetros preestablecidos.</p>
+                            <div class="grid md:grid-cols-2 gap-2">
+                                <div class="bg-white rounded p-3 text-sm"><strong class="text-blue-700">Estándar:</strong> Referencia establecida para determinar valor.</div>
+                                <div class="bg-white rounded p-3 text-sm"><strong class="text-blue-700">Confiabilidad:</strong> Grado de compatibilidad con valor real.</div>
+                            </div>
+                        </div>
+                        <!-- Mantenimiento -->
+                        <div class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-5 border-l-4 border-emerald-500">
+                            <h3 class="text-lg font-bold text-gray-800 mb-3"><i class="fas fa-clipboard-check text-emerald-500 mr-2"></i>Mantenimiento</h3>
+                            <p class="text-gray-600 text-sm mb-3">Revisar equipos para que funcionen en óptimas condiciones.</p>
+                            <div class="grid md:grid-cols-2 gap-2">
+                                <div class="bg-white rounded p-3 text-sm border-l-2 border-gray-300"><strong>Regular:</strong> Revisiones y ajustes básicos rutinarios.</div>
+                                <div class="bg-white rounded p-3 text-sm border-l-2 border-emerald-400"><strong class="text-emerald-700">Preventivo:</strong> Estructurado, periódico, documentado. Requerido para acreditaciones.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 10: Equipos de Prueba -->
+                    <div class="step-content" data-step="10">
+                        <div class="mb-8">
+                            <span class="inline-block px-3 py-1 bg-violet-100 text-violet-700 rounded-full text-sm font-medium mb-4">Paso 10</span>
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Equipos de Prueba y Manuales</h2>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3"><i class="fas fa-tools mr-2 text-violet-600"></i>Equipos de Prueba</h3>
+                        <div class="grid md:grid-cols-2 gap-4 mb-6">
+                            <div class="bg-white rounded-xl p-4 shadow border">
+                                <h4 class="font-bold text-gray-800"><i class="fas fa-tachometer-alt text-violet-600 mr-2"></i>Multímetros</h4>
+                                <p class="text-gray-600 text-sm">Miden voltaje, corriente, resistencia. Análogos o digitales.</p>
+                            </div>
+                            <div class="bg-white rounded-xl p-4 shadow border">
+                                <h4 class="font-bold text-gray-800"><i class="fas fa-wave-square text-blue-600 mr-2"></i>Osciloscopios</h4>
+                                <p class="text-gray-600 text-sm">Visualizan cambios de voltaje. Miden amplitud, frecuencia, fase.</p>
+                            </div>
+                            <div class="bg-white rounded-xl p-4 shadow border">
+                                <h4 class="font-bold text-gray-800"><i class="fas fa-signal text-emerald-600 mr-2"></i>Generadores de Señales</h4>
+                                <p class="text-gray-600 text-sm">Producen ondas senoidales, cuadradas, triangulares.</p>
+                            </div>
+                            <div class="bg-white rounded-xl p-4 shadow border">
+                                <h4 class="font-bold text-gray-800"><i class="fas fa-heartbeat text-rose-600 mr-2"></i>Simuladores</h4>
+                                <p class="text-gray-600 text-sm">Producen señales como ECG o presión sanguínea.</p>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3"><i class="fas fa-book mr-2 text-amber-600"></i>Tipos de Manuales</h3>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="bg-amber-50 rounded-xl p-4 border border-amber-200">
+                                <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-user-cog text-amber-600 mr-2"></i>Manual del Usuario</h4>
+                                <p class="text-gray-600 text-sm">Funcionamiento general, especificaciones básicas, diagramas generales.</p>
+                            </div>
+                            <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-200">
+                                <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-cogs text-indigo-600 mr-2"></i>Manual Técnico</h4>
+                                <p class="text-gray-600 text-sm">Info técnica específica, procedimientos de reparación, esquemas de circuitos.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Step 11: Inspección e Instalación -->
+                    <div class="step-content" data-step="11">
+                        <div class="mb-8">
+                            <span class="inline-block px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-sm font-medium mb-4">Paso 11</span>
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Inspección e Instalación</h2>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-6 mb-6">
+                            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                                <div class="bg-gradient-to-r from-cyan-500 to-blue-500 text-white p-4">
+                                    <h3 class="text-lg font-bold"><i class="fas fa-search mr-2"></i>Inspección</h3>
+                                </div>
+                                <div class="p-4">
+                                    <p class="text-gray-600 text-sm mb-3">Verificación de condiciones de un equipo o facilidad física.</p>
+                                    <ul class="text-cyan-700 text-sm space-y-1">
+                                        <li><i class="fas fa-check-circle mr-2"></i>Incluye reporte de hallazgos</li>
+                                        <li><i class="fas fa-check-circle mr-2"></i>Debe documentarse y archivarse</li>
+                                        <li><i class="fas fa-check-circle mr-2"></i>Requerida para acreditaciones</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                                <div class="bg-gradient-to-r from-emerald-500 to-teal-500 text-white p-4">
+                                    <h3 class="text-lg font-bold"><i class="fas fa-plug mr-2"></i>Instalación</h3>
+                                </div>
+                                <div class="p-4">
+                                    <p class="text-gray-600 text-sm mb-3">Colocación de equipo y verificación de funcionamiento.</p>
+                                    <ul class="text-emerald-700 text-sm space-y-1">
+                                        <li><i class="fas fa-check-circle mr-2"></i>Funcionamiento óptimo</li>
+                                        <li><i class="fas fa-check-circle mr-2"></i>Cumplir especificaciones</li>
+                                        <li><i class="fas fa-check-circle mr-2"></i>Verificación post-instalación</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl p-5">
+                            <h4 class="text-lg font-bold mb-3 text-center"><i class="fas fa-tasks mr-2"></i>Resumen: Funciones del BMET</h4>
+                            <div class="grid grid-cols-3 md:grid-cols-6 gap-2 text-center text-sm">
+                                <div class="bg-white/10 rounded p-2"><i class="fas fa-wrench text-red-400"></i><p>Reparación</p></div>
+                                <div class="bg-white/10 rounded p-2"><i class="fas fa-sliders-h text-blue-400"></i><p>Calibración</p></div>
+                                <div class="bg-white/10 rounded p-2"><i class="fas fa-clipboard-check text-emerald-400"></i><p>Mantenimiento</p></div>
+                                <div class="bg-white/10 rounded p-2"><i class="fas fa-search text-cyan-400"></i><p>Inspección</p></div>
+                                <div class="bg-white/10 rounded p-2"><i class="fas fa-plug text-teal-400"></i><p>Instalación</p></div>
+                                <div class="bg-white/10 rounded p-2"><i class="fas fa-chalkboard-teacher text-yellow-400"></i><p>Capacitación</p></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 12: Autoevaluación -->
+                    <div class="step-content" data-step="12">
+                        <div class="mb-8">
+                            <span class="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-4">Paso 12 - Final</span>
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Autoevaluación del Módulo</h2>
+                        </div>
+                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+                            <p class="text-amber-800 text-sm"><i class="fas fa-info-circle mr-2"></i>Selecciona la opción correcta. Esta es práctica - tu prueba será presencial.</p>
+                        </div>
+
+                        <div id="quiz-container" class="space-y-4">
+                            <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border" data-question="1">
+                                <p class="font-semibold text-gray-800 mb-3"><span class="text-emerald-600">1.</span> ¿Cuál es el código DOT del Técnico Biomédico?</p>
+                                <div class="space-y-2">
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">a) DOT 015.261-010</button>
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" data-correct="true">b) DOT 019.261-010</button>
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">c) DOT 020.261-010</button>
+                                </div>
+                                <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+                            </div>
+                            <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border" data-question="2">
+                                <p class="font-semibold text-gray-800 mb-3"><span class="text-emerald-600">2.</span> ¿Cuántos años de experiencia tiene un BMET III?</p>
+                                <div class="space-y-2">
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">a) 4 años</button>
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">b) 8 años</button>
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" data-correct="true">c) 12 años</button>
+                                </div>
+                                <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+                            </div>
+                            <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border" data-question="3">
+                                <p class="font-semibold text-gray-800 mb-3"><span class="text-emerald-600">3.</span> ¿Cuál es el primer paso de reparación?</p>
+                                <div class="space-y-2">
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">a) Localizar</button>
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" data-correct="true">b) Diagnosticar</button>
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">c) Aislar</button>
+                                </div>
+                                <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+                            </div>
+                            <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border" data-question="4">
+                                <p class="font-semibold text-gray-800 mb-3"><span class="text-emerald-600">4.</span> ¿Qué es la calibración?</p>
+                                <div class="space-y-2">
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">a) Reparar un equipo</button>
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" data-correct="true">b) Comparar un equipo con un estándar</button>
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">c) Instalar un equipo</button>
+                                </div>
+                                <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+                            </div>
+                            <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border" data-question="5">
+                                <p class="font-semibold text-gray-800 mb-3"><span class="text-emerald-600">5.</span> ¿Qué especialista trabaja con equipos de radiología?</p>
+                                <div class="space-y-2">
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">a) LES</button>
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" data-correct="true">b) RES</button>
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">c) BMET Supervisor</button>
+                                </div>
+                                <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+                            </div>
+                            <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border" data-question="6">
+                                <p class="font-semibold text-gray-800 mb-3"><span class="text-emerald-600">6.</span> ¿Cuáles son las 3 características ideales del BMET?</p>
+                                <div class="space-y-2">
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">a) Rápido, Fuerte, Inteligente</button>
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" data-correct="true">b) Práctico, Lógico, Organizado</button>
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">c) Creativo, Artístico, Social</button>
+                                </div>
+                                <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+                            </div>
+                            <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border" data-question="7">
+                                <p class="font-semibold text-gray-800 mb-3"><span class="text-emerald-600">7.</span> ¿Qué mantenimiento es requerido para acreditaciones?</p>
+                                <div class="space-y-2">
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">a) Regular</button>
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" data-correct="true">b) Preventivo</button>
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">c) Correctivo</button>
+                                </div>
+                                <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+                            </div>
+                            <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border" data-question="8">
+                                <p class="font-semibold text-gray-800 mb-3"><span class="text-emerald-600">8.</span> ¿Qué equipo visualiza gráficamente los cambios de voltaje?</p>
+                                <div class="space-y-2">
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">a) Multímetro</button>
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" data-correct="true">b) Osciloscopio</button>
+                                    <button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">c) Simulador</button>
+                                </div>
+                                <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+                            </div>
+                        </div>
+
+                        <div id="quiz-results" class="hidden mt-6 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl p-4">
+                            <h4 class="text-lg font-semibold"><i class="fas fa-trophy mr-2"></i>Resultados</h4>
+                            <p id="quiz-score"></p>
+                        </div>
+
+                        <div class="mt-6 bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+                            <div class="text-green-600 text-4xl mb-2"><i class="fas fa-check-circle"></i></div>
+                            <h4 class="text-lg font-semibold text-green-800">¡Has completado el Módulo 1A!</h4>
+                            <p class="text-green-700 text-sm">Ahora conoces las funciones y categorías del Técnico Biomédico.</p>
+                        </div>
+                    </div>
+ías BMET', 'Video BMET', 'Características', 'Ing. Biomédica vs Clínica', 'Video Carrera', 'Presentación', 'Conceptos', 'Equipos', 'Inspección', 'Autoevaluación'];
+
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxSq1tlrVof4FuvoljwF-brc8Bm2H-2VElhee5j5bl0A_LXjSG47af3STpIp3Nn_Xtb6g/exec';
+        const MODULE_ID = 'TEBI1105_M1A';
+        let isOnlineMode = false;
+        let currentStudentName = '';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initStepper();
+            setupEventListeners();
+            const savedId = localStorage.getItem('tebi1105_studentId');
+            if (savedId) {
+                verifyStudentOnline(savedId);
+            }
+        });
+
+        async function verifyStudentOnline(studentId) {
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL + '?action=verify&studentId=' + encodeURIComponent(studentId));
+                const result = await response.json();
+                if (result.success) {
+                    isOnlineMode = true;
+                    currentStudentName = result.name || studentId;
+                    localStorage.setItem('tebi1105_studentId', studentId);
+                    document.getElementById('login-modal').classList.add('modal-hidden');
+                    document.getElementById('user-info').classList.remove('hidden');
+                    document.getElementById('user-name').textContent = currentStudentName;
+                    await loadProgressOnline(studentId);
+                } else {
+                    alert('Estudiante no encontrado en el sistema. Verifica tu ID.');
+                    localStorage.removeItem('tebi1105_studentId');
+                }
+            } catch (error) {
+                console.log('Modo offline:', error);
+                isOnlineMode = false;
+                document.getElementById('login-modal').classList.add('modal-hidden');
+                document.getElementById('user-info').classList.remove('hidden');
+                document.getElementById('user-name').textContent = studentId + ' (offline)';
+                loadProgress(studentId);
+            }
+        }
+
+        async function loadProgressOnline(studentId) {
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL + '?action=getProgress&studentId=' + encodeURIComponent(studentId) + '&moduleId=' + MODULE_ID);
+                const result = await response.json();
+                if (result.success && result.progress) {
+                    completedSteps = new Set(result.progress.completedSteps || []);
+                    currentStep = result.progress.currentStep || 1;
+                } else {
+                    loadProgress(studentId);
+                }
+            } catch (error) {
+                loadProgress(studentId);
+            }
+            goToStep(currentStep);
+            updateProgress();
+        }
+
+        async function saveProgressOnline() {
+            if (!isOnlineMode) return;
+            const studentId = localStorage.getItem('tebi1105_studentId');
+            if (!studentId) return;
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'saveProgress',
+                        studentId: studentId,
+                        moduleId: MODULE_ID,
+                        currentStep: currentStep,
+                        completedSteps: Array.from(completedSteps),
+                        timestamp: new Date().toISOString()
+                    })
+                });
+            } catch (error) {
+                console.log('Error guardando online:', error);
+            }
+        }
+
+        async function saveQuizAnswerOnline(questionNum, answer, isCorrect) {
+            if (!isOnlineMode) return;
+            const studentId = localStorage.getItem('tebi1105_studentId');
+            if (!studentId) return;
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'saveQuizAnswer',
+                        studentId: studentId,
+                        moduleId: MODULE_ID,
+                        questionNum: questionNum,
+                        answer: answer,
+                        isCorrect: isCorrect,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+            } catch (error) {
+                console.log('Error guardando respuesta:', error);
+            }
+        }
+
+        function initStepper() {
+            const stepper = document.getElementById('stepper');
+            stepper.innerHTML = stepNames.map((name, i) => 
+                '<div class="stepper-item flex items-center ' + (i === 0 ? 'active' : '') + '" data-step="' + (i + 1) + '">' +
+                '<div class="stepper-circle w-7 h-7 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500 bg-white">' + (i + 1) + '</div>' +
+                '<span class="ml-2 text-xs text-gray-600 hidden lg:block">' + name + '</span></div>'
+            ).join('');
+        }
+
+        function setupEventListeners() {
+            document.getElementById('login-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const studentId = document.getElementById('student-id').value.trim().toUpperCase();
+                if (studentId) {
+                    const btn = e.target.querySelector('button');
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Verificando...';
+                    btn.disabled = true;
+                    await verifyStudentOnline(studentId);
+                    btn.innerHTML = '<span>Ingresar</span> <i class="fas fa-arrow-right ml-2"></i>';
+                    btn.disabled = false;
+                }
+            });
+            document.getElementById('prev-btn').addEventListener('click', function() { navigateStep(-1); });
+            document.getElementById('next-btn').addEventListener('click', function() { navigateStep(1); });
+            document.querySelectorAll('.quiz-option').forEach(function(option) {
+                option.addEventListener('click', handleQuizAnswer);
+            });
+            document.getElementById('stepper').addEventListener('click', function(e) {
+                var item = e.target.closest('.stepper-item');
+                if (item) {
+                    var step = parseInt(item.dataset.step);
+                    if (step <= Math.max.apply(null, Array.from(completedSteps).concat([currentStep]))) goToStep(step);
+                }
+            });
+        }
+
+        function loadProgress(studentId) {
+            var saved = localStorage.getItem('tebi1105_m1a_' + studentId);
+            if (saved) {
+                var data = JSON.parse(saved);
+                completedSteps = new Set(data.completedSteps || []);
+                currentStep = data.currentStep || 1;
+                quizAnswers = data.quizAnswers || {};
+            }
+            goToStep(currentStep);
+            updateProgress();
+        }
+
+        function saveProgress() {
+            var studentId = localStorage.getItem('tebi1105_studentId');
+            if (studentId) {
+                localStorage.setItem('tebi1105_m1a_' + studentId, JSON.stringify({
+                    completedSteps: Array.from(completedSteps),
+                    currentStep: currentStep,
+                    quizAnswers: quizAnswers
+                }));
+                saveProgressOnline();
+            }
+        }
+
+        function goToStep(step) {
+            if (step < 1 || step > totalSteps) return;
+            document.querySelectorAll('.step-content').forEach(function(c) { c.classList.remove('active'); });
+            var content = document.querySelector('.step-content[data-step="' + step + '"]');
+            if (content) content.classList.add('active');
+            currentStep = step;
+            updateStepper();
+            updateNavigationButtons();
+            document.getElementById('step-indicator').textContent = 'Paso ' + step + ' de ' + totalSteps;
+            saveProgress();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function navigateStep(dir) {
+            if (dir > 0) completedSteps.add(currentStep);
+            goToStep(currentStep + dir);
+            updateProgress();
+        }
+
+        function updateStepper() {
+            document.querySelectorAll('.stepper-item').forEach(function(item) {
+                var step = parseInt(item.dataset.step);
+                item.classList.remove('active', 'completed');
+                if (step === currentStep) item.classList.add('active');
+                else if (completedSteps.has(step)) {
+                    item.classList.add('completed');
+                    item.querySelector('.stepper-circle').innerHTML = '<i class="fas fa-check text-white text-xs"></i>';
+                }
+            });
+        }
+
+        function updateNavigationButtons() {
+            document.getElementById('prev-btn').disabled = currentStep === 1;
+            var nextBtn = document.getElementById('next-btn');
+            nextBtn.innerHTML = currentStep === totalSteps ? 'Finalizar <i class="fas fa-flag-checkered ml-2"></i>' : 'Siguiente <i class="fas fa-arrow-right ml-2"></i>';
+        }
+
+        function updateProgress() {
+            var progress = Math.round((completedSteps.size / totalSteps) * 100);
+            document.getElementById('progress-bar').style.width = progress + '%';
+            document.getElementById('progress-text').textContent = progress + '%';
+        }
+
+        function handleQuizAnswer(e) {
+            var option = e.target;
+            if (!option.classList.contains('quiz-option')) return;
+            var question = option.closest('.quiz-question');
+            var qNum = question.dataset.question;
+            if (quizAnswers[qNum]) return;
+            var isCorrect = option.dataset.correct === 'true';
+            option.classList.add(isCorrect ? 'correct' : 'incorrect');
+            if (!isCorrect) {
+                question.querySelectorAll('.quiz-option').forEach(function(opt) {
+                    if (opt.dataset.correct === 'true') opt.classList.add('correct');
+                });
+            }
+            var feedback = question.querySelector('.quiz-feedback');
+            feedback.classList.remove('hidden');
+            feedback.classList.add(isCorrect ? 'bg-green-100' : 'bg-red-100');
+            feedback.innerHTML = isCorrect ? '<i class="fas fa-check-circle text-green-600 mr-1"></i>¡Correcto!' : '<i class="fas fa-times-circle text-red-600 mr-1"></i>Incorrecto';
+            quizAnswers[qNum] = isCorrect;
+            saveQuizAnswerOnline(qNum, option.textContent, isCorrect);
+            saveProgress();
+            var total = document.querySelectorAll('.quiz-question').length;
+            if (Object.keys(quizAnswers).length === total) {
+                var correct = Object.values(quizAnswers).filter(function(v) { return v; }).length;
+                document.getElementById('quiz-results').classList.remove('hidden');
+                document.getElementById('quiz-score').textContent = 'Obtuviste ' + correct + ' de ' + total + ' (' + Math.round(correct/total*100) + '%)';
+                completedSteps.add(totalSteps);
+                updateProgress();
+                saveProgress();
+            }
+        }
+    </script>
+</body>
+</html>
