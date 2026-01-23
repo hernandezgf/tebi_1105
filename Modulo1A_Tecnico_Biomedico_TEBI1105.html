@@ -33,7 +33,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Modal de Login -->
-    <div id="login-modal" class="modal-overlay">
+    <div id="login-modal" class="modal-overlay modal-hidden">
         <div class="modal-content">
             <div class="text-center mb-6">
                 <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -599,7 +599,28 @@
                             <p class="text-green-700 text-sm">Ahora conoces las funciones y categorías del Técnico Biomédico.</p>
                         </div>
                     </div>
-ías BMET', 'Video BMET', 'Características', 'Ing. Biomédica vs Clínica', 'Video Carrera', 'Presentación', 'Conceptos', 'Equipos', 'Inspección', 'Autoevaluación'];
+
+                    <!-- Navigation Buttons -->
+                    <div class="flex justify-between mt-8 pt-6 border-t">
+                        <button id="prev-btn" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50" disabled>
+                            <i class="fas fa-arrow-left mr-2"></i>Anterior
+                        </button>
+                        <span id="step-indicator" class="self-center text-gray-500 text-sm">Paso 1 de 12</span>
+                        <button id="next-btn" class="px-6 py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700">
+                            Siguiente<i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        let currentStep = 1;
+        let completedSteps = new Set();
+        let quizAnswers = {};
+        const totalSteps = 12;
+        const stepNames = ['Introducción', 'Responsabilidades', 'Categorías BMET', 'Video BMET', 'Características', 'Ing. Biomédica vs Clínica', 'Video Carrera', 'Presentación', 'Conceptos', 'Equipos', 'Inspección', 'Autoevaluación'];
 
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxSq1tlrVof4FuvoljwF-brc8Bm2H-2VElhee5j5bl0A_LXjSG47af3STpIp3Nn_Xtb6g/exec';
         const MODULE_ID = 'TEBI1105_M1A';
