@@ -29,6 +29,41 @@
         .user-badge { background: linear-gradient(135deg, #059669, #047857); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; }
         .level-card { transition: all 0.3s ease; }
         .level-card:hover { transform: scale(1.02); }
+        /* Timer Styles */
+        .timer-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 50;
+            background: linear-gradient(135deg, #1e3a5f, #0d1b2a);
+            padding: 15px 25px;
+            border-radius: 50px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .timer-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #10b981;
+            font-family: 'Courier New', monospace;
+            min-width: 70px;
+            text-align: center;
+        }
+        .timer-warning { color: #f59e0b; }
+        .timer-danger { color: #ef4444; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .timer-label { color: #9ca3af; font-size: 0.75rem; text-transform: uppercase; }
+        .timer-icon { color: #10b981; font-size: 1.25rem; }
+        .step-image {
+            width: 100%;
+            max-height: 250px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -51,6 +86,15 @@
                     <span>Ingresar</span> <i class="fas fa-arrow-right ml-2"></i>
                 </button>
             </form>
+        </div>
+    </div>
+
+    <!-- Timer Flotante -->
+    <div id="timer-container" class="timer-container">
+        <i class="fas fa-clock timer-icon"></i>
+        <div>
+            <div class="timer-label">Tiempo restante</div>
+            <div id="timer-display" class="timer-display">00:00</div>
         </div>
     </div>
 
@@ -102,8 +146,9 @@
             <!-- Content Area -->
             <section class="lg:w-3/4">
                 <div class="bg-white rounded-xl shadow-md p-6 md:p-8">
-                    <!-- Step 1: Introducción -->
-                    <div class="step-content active" data-step="1">
+                    <!-- Step 1: Introducción (3 min) -->
+                    <div class="step-content active" data-step="1" data-time="180">
+                        <img src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=800&q=80" alt="Tecnología Biomédica" class="step-image">
                         <div class="mb-8">
                             <span class="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-4">Unidad I - Módulo 1A</span>
                             <h2 class="text-3xl font-bold text-gray-800 mb-4">El Técnico Biomédico (BMET)</h2>
@@ -135,8 +180,9 @@
                         </div>
                     </div>
 
-                    <!-- Step 2: Responsabilidades -->
-                    <div class="step-content" data-step="2">
+                    <!-- Step 2: Responsabilidades (2 min) -->
+                    <div class="step-content" data-step="2" data-time="120">
+                        <img src="https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?w=800&q=80" alt="Técnico trabajando en equipo médico" class="step-image">
                         <div class="mb-8">
                             <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-4">Paso 2</span>
                             <h2 class="text-2xl font-bold text-gray-800 mb-4">DOT 019.261-010: Responsabilidades</h2>
@@ -190,8 +236,10 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Step 3: Categorías BMET -->
-                    <div class="step-content" data-step="3">
+
+                    <!-- Step 3: Categorías BMET (3 min) -->
+                    <div class="step-content" data-step="3" data-time="180">
+                        <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&q=80" alt="Equipo médico profesional" class="step-image">
                         <div class="mb-8">
                             <span class="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium mb-4">Paso 3</span>
                             <h2 class="text-2xl font-bold text-gray-800 mb-4">Categorías y Niveles del BMET</h2>
@@ -253,8 +301,8 @@
                         </div>
                     </div>
 
-                    <!-- Step 4: Video 1 -->
-                    <div class="step-content" data-step="4">
+                    <!-- Step 4: Video 1 (7 min) -->
+                    <div class="step-content" data-step="4" data-time="420">
                         <div class="mb-8">
                             <span class="inline-block px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium mb-4">Paso 4</span>
                             <h2 class="text-2xl font-bold text-gray-800 mb-4">Video: ¿Qué es un BMET?</h2>
@@ -274,8 +322,9 @@
                         </div>
                     </div>
 
-                    <!-- Step 5: Características -->
-                    <div class="step-content" data-step="5">
+                    <!-- Step 5: Características (1 min) -->
+                    <div class="step-content" data-step="5" data-time="60">
+                        <img src="https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=800&q=80" alt="Profesional médico" class="step-image">
                         <div class="mb-8">
                             <span class="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium mb-4">Paso 5</span>
                             <h2 class="text-2xl font-bold text-gray-800 mb-4">Características Ideales del BMET</h2>
@@ -304,8 +353,10 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Step 6: Ing Biomédica vs Clínica -->
-                    <div class="step-content" data-step="6">
+
+                    <!-- Step 6: Ing Biomédica vs Clínica (1 min) -->
+                    <div class="step-content" data-step="6" data-time="60">
+                        <img src="https://images.unsplash.com/photo-1551076805-e1869033e561?w=800&q=80" alt="Laboratorio de investigación" class="step-image">
                         <div class="mb-8">
                             <span class="inline-block px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm font-medium mb-4">Paso 6</span>
                             <h2 class="text-2xl font-bold text-gray-800 mb-4">Ingeniería Biomédica vs Ingeniería Clínica</h2>
@@ -345,8 +396,8 @@
                         </div>
                     </div>
 
-                    <!-- Step 7: Video 2 -->
-                    <div class="step-content" data-step="7">
+                    <!-- Step 7: Video 2 (5 min) -->
+                    <div class="step-content" data-step="7" data-time="300">
                         <div class="mb-8">
                             <span class="inline-block px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium mb-4">Paso 7</span>
                             <h2 class="text-2xl font-bold text-gray-800 mb-4">Video: Carrera del Técnico Biomédico</h2>
@@ -367,8 +418,8 @@
                         </div>
                     </div>
 
-                    <!-- Step 8: Presentación -->
-                    <div class="step-content" data-step="8">
+                    <!-- Step 8: Presentación (10 min) -->
+                    <div class="step-content" data-step="8" data-time="600">
                         <div class="mb-8">
                             <span class="inline-block px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium mb-4">Paso 8</span>
                             <h2 class="text-2xl font-bold text-gray-800 mb-4">Presentación: Conceptos de Calibración</h2>
@@ -382,8 +433,10 @@
                             <p class="text-orange-700 text-sm"><i class="fas fa-info-circle mr-2"></i>Usa las flechas para navegar. Puedes ver en pantalla completa.</p>
                         </div>
                     </div>
-                    <!-- Step 9: Conceptos Fundamentales -->
-                    <div class="step-content" data-step="9">
+
+                    <!-- Step 9: Conceptos Fundamentales (2 min) -->
+                    <div class="step-content" data-step="9" data-time="120">
+                        <img src="https://images.unsplash.com/photo-1516549655169-df83a0774514?w=800&q=80" alt="Instrumentos de medición" class="step-image">
                         <div class="mb-8">
                             <span class="inline-block px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-sm font-medium mb-4">Paso 9</span>
                             <h2 class="text-2xl font-bold text-gray-800 mb-4">Conceptos Fundamentales</h2>
@@ -419,8 +472,9 @@
                         </div>
                     </div>
 
-                    <!-- Step 10: Equipos de Prueba -->
-                    <div class="step-content" data-step="10">
+                    <!-- Step 10: Equipos de Prueba (2 min) -->
+                    <div class="step-content" data-step="10" data-time="120">
+                        <img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80" alt="Equipos de prueba electrónicos" class="step-image">
                         <div class="mb-8">
                             <span class="inline-block px-3 py-1 bg-violet-100 text-violet-700 rounded-full text-sm font-medium mb-4">Paso 10</span>
                             <h2 class="text-2xl font-bold text-gray-800 mb-4">Equipos de Prueba y Manuales</h2>
@@ -456,8 +510,10 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Step 11: Inspección e Instalación -->
-                    <div class="step-content" data-step="11">
+
+                    <!-- Step 11: Inspección e Instalación (2 min) -->
+                    <div class="step-content" data-step="11" data-time="120">
+                        <img src="https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=800&q=80" alt="Instalación de equipos médicos" class="step-image">
                         <div class="mb-8">
                             <span class="inline-block px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-sm font-medium mb-4">Paso 11</span>
                             <h2 class="text-2xl font-bold text-gray-800 mb-4">Inspección e Instalación</h2>
@@ -503,8 +559,9 @@
                         </div>
                     </div>
 
-                    <!-- Step 12: Autoevaluación -->
-                    <div class="step-content" data-step="12">
+                    <!-- Step 12: Autoevaluación (10 min) -->
+                    <div class="step-content" data-step="12" data-time="600">
+                        <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&q=80" alt="Evaluación y estudio" class="step-image">
                         <div class="mb-8">
                             <span class="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-4">Paso 12 - Final</span>
                             <h2 class="text-2xl font-bold text-gray-800 mb-4">Autoevaluación del Módulo</h2>
@@ -622,10 +679,70 @@
         const totalSteps = 12;
         const stepNames = ['Introducción', 'Responsabilidades', 'Categorías BMET', 'Video BMET', 'Características', 'Ing. Biomédica vs Clínica', 'Video Carrera', 'Presentación', 'Conceptos', 'Equipos', 'Inspección', 'Autoevaluación'];
 
+        // Tiempos por paso en segundos
+        const stepTimes = {
+            1: 180,  // 3 min
+            2: 120,  // 2 min
+            3: 180,  // 3 min
+            4: 420,  // 7 min
+            5: 60,   // 1 min
+            6: 60,   // 1 min
+            7: 300,  // 5 min
+            8: 600,  // 10 min
+            9: 120,  // 2 min
+            10: 120, // 2 min
+            11: 120, // 2 min
+            12: 600  // 10 min
+        };
+
+        let timerInterval = null;
+        let remainingTime = 0;
+
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxSq1tlrVof4FuvoljwF-brc8Bm2H-2VElhee5j5bl0A_LXjSG47af3STpIp3Nn_Xtb6g/exec';
         const MODULE_ID = 'TEBI1105_M1A';
         let isOnlineMode = false;
         let currentStudentName = '';
+
+        // Timer Functions
+        function startTimer(seconds) {
+            clearInterval(timerInterval);
+            remainingTime = seconds;
+            updateTimerDisplay();
+
+            timerInterval = setInterval(function() {
+                remainingTime--;
+                updateTimerDisplay();
+
+                if (remainingTime <= 0) {
+                    clearInterval(timerInterval);
+                    onTimerComplete();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(remainingTime / 60);
+            const seconds = remainingTime % 60;
+            const display = document.getElementById('timer-display');
+            display.textContent = String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+
+            // Cambiar color según tiempo restante
+            display.classList.remove('timer-warning', 'timer-danger');
+            if (remainingTime <= 30) {
+                display.classList.add('timer-danger');
+            } else if (remainingTime <= 60) {
+                display.classList.add('timer-warning');
+            }
+        }
+
+        function onTimerComplete() {
+            // Auto avanzar al siguiente paso
+            if (currentStep < totalSteps) {
+                completedSteps.add(currentStep);
+                goToStep(currentStep + 1);
+                updateProgress();
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             initStepper();
@@ -648,6 +765,7 @@
                     document.getElementById('user-info').classList.remove('hidden');
                     document.getElementById('user-name').textContent = currentStudentName;
                     await loadProgressOnline(studentId);
+                    startTimer(stepTimes[currentStep]);
                 } else {
                     alert('Estudiante no encontrado en el sistema. Verifica tu ID.');
                     localStorage.removeItem('tebi1105_studentId');
@@ -659,6 +777,7 @@
                 document.getElementById('user-info').classList.remove('hidden');
                 document.getElementById('user-name').textContent = studentId + ' (offline)';
                 loadProgress(studentId);
+                startTimer(stepTimes[currentStep]);
             }
         }
 
@@ -728,7 +847,7 @@
 
         function initStepper() {
             const stepper = document.getElementById('stepper');
-            stepper.innerHTML = stepNames.map((name, i) => 
+            stepper.innerHTML = stepNames.map((name, i) =>
                 '<div class="stepper-item flex items-center ' + (i === 0 ? 'active' : '') + '" data-step="' + (i + 1) + '">' +
                 '<div class="stepper-circle w-7 h-7 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500 bg-white">' + (i + 1) + '</div>' +
                 '<span class="ml-2 text-xs text-gray-600 hidden lg:block">' + name + '</span></div>'
@@ -797,6 +916,9 @@
             document.getElementById('step-indicator').textContent = 'Paso ' + step + ' de ' + totalSteps;
             saveProgress();
             window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Iniciar temporizador para el nuevo paso
+            startTimer(stepTimes[step]);
         }
 
         function navigateStep(dir) {
