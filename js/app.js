@@ -24,7 +24,7 @@ const CONFIG = {
     // Tiempos por paso en segundos
     STEP_TIMES: {
         1: 180,   // 3 min
-        2: 120,   // 2 min
+        2: 300,   // 5 min (DOT vs O*NET)
         3: 180,   // 3 min
         4: 420,   // 7 min
         5: 60,    // 1 min
