@@ -9,7 +9,7 @@ const CONFIG = {
     TOTAL_STEPS: 12,
     STEP_NAMES: [
         'Introducción',
-        'Responsabilidades',
+        'DOT vs O*NET',
         'Categorías BMET',
         'Video BMET',
         'Características',
