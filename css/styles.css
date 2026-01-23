@@ -165,6 +165,24 @@ body {
     animation: pulse 1s infinite;
 }
 
+.timer-complete {
+    color: #10b981;
+    font-size: 1rem;
+}
+
+.timer-container.timer-done {
+    background: linear-gradient(135deg, #065f46, #047857);
+    box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
+}
+
+.timer-container.timer-done .timer-icon {
+    color: #a7f3d0;
+}
+
+.timer-container.timer-done .timer-label {
+    color: #a7f3d0;
+}
+
 @keyframes pulse {
     0%, 100% {
         opacity: 1;
@@ -172,6 +190,16 @@ body {
     50% {
         opacity: 0.5;
     }
+}
+
+/* Stepper con tiempo completado */
+.stepper-item.time-completed .stepper-circle {
+    border-color: #10b981;
+}
+
+.stepper-item:not(.completed):not(.active).time-completed .stepper-circle {
+    background-color: #d1fae5;
+    color: #065f46;
 }
 
 .timer-label {

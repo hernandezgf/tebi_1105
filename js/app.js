@@ -44,20 +44,35 @@ const CONFIG = {
 let state = {
     currentStep: 1,
     completedSteps: new Set(),
+    completedTimes: new Set(),  // Pasos donde ya se completó el tiempo
     quizAnswers: {},
     isOnlineMode: false,
     currentStudentName: '',
     timerInterval: null,
-    remainingTime: 0
+    remainingTime: 0,
+    timerCompleted: false  // Si el timer del paso actual ya terminó
 };
 
 // ==========================================
 // FUNCIONES DEL TEMPORIZADOR
 // ==========================================
-function startTimer(seconds) {
+function startTimer(step) {
     clearInterval(state.timerInterval);
-    state.remainingTime = seconds;
+
+    // Si ya completó el tiempo de este paso, no iniciar timer
+    if (state.completedTimes.has(step)) {
+        state.timerCompleted = true;
+        state.remainingTime = 0;
+        updateTimerDisplay();
+        updateNavigationButtons();
+        showTimerCompleteMessage();
+        return;
+    }
+
+    state.timerCompleted = false;
+    state.remainingTime = CONFIG.STEP_TIMES[step];
     updateTimerDisplay();
+    updateNavigationButtons();
 
     state.timerInterval = setInterval(function() {
         state.remainingTime--;
@@ -75,24 +90,58 @@ function updateTimerDisplay() {
     const seconds = state.remainingTime % 60;
     const display = document.getElementById('timer-display');
 
-    display.textContent = String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+    if (state.timerCompleted || state.completedTimes.has(state.currentStep)) {
+        display.textContent = '✓ Completado';
+        display.classList.remove('timer-warning', 'timer-danger');
+        display.classList.add('timer-complete');
+    } else {
+        display.textContent = String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
 
-    // Cambiar color según tiempo restante
-    display.classList.remove('timer-warning', 'timer-danger');
-    if (state.remainingTime <= 30) {
-        display.classList.add('timer-danger');
-    } else if (state.remainingTime <= 60) {
-        display.classList.add('timer-warning');
+        // Cambiar color según tiempo restante
+        display.classList.remove('timer-warning', 'timer-danger', 'timer-complete');
+        if (state.remainingTime <= 30) {
+            display.classList.add('timer-danger');
+        } else if (state.remainingTime <= 60) {
+            display.classList.add('timer-warning');
+        }
     }
 }
 
+function showTimerCompleteMessage() {
+    const container = document.getElementById('timer-container');
+    container.classList.add('timer-done');
+}
+
+function hideTimerCompleteMessage() {
+    const container = document.getElementById('timer-container');
+    container.classList.remove('timer-done');
+}
+
 function onTimerComplete() {
-    // Auto avanzar al siguiente paso
-    if (state.currentStep < CONFIG.TOTAL_STEPS) {
-        state.completedSteps.add(state.currentStep);
-        goToStep(state.currentStep + 1);
-        updateProgress();
-    }
+    state.timerCompleted = true;
+    state.completedTimes.add(state.currentStep);
+    state.completedSteps.add(state.currentStep);
+
+    updateTimerDisplay();
+    updateNavigationButtons();
+    updateProgress();
+    saveProgress();
+    showTimerCompleteMessage();
+
+    // Mostrar notificación
+    showNotification('¡Tiempo completado! Puedes continuar al siguiente paso.');
+}
+
+function showNotification(message) {
+    // Crear notificación temporal
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-bounce';
+    notification.innerHTML = '<i class="fas fa-check-circle mr-2"></i>' + message;
+    document.body.appendChild(notification);
+
+    setTimeout(function() {
+        notification.remove();
+    }, 3000);
 }
 
 // ==========================================
@@ -113,7 +162,7 @@ async function verifyStudentOnline(studentId) {
             document.getElementById('user-name').textContent = state.currentStudentName;
 
             await loadProgressOnline(studentId);
-            startTimer(CONFIG.STEP_TIMES[state.currentStep]);
+            startTimer(state.currentStep);
         } else {
             alert('Estudiante no encontrado en el sistema. Verifica tu ID.');
             localStorage.removeItem('tebi1105_studentId');
@@ -127,7 +176,7 @@ async function verifyStudentOnline(studentId) {
         document.getElementById('user-name').textContent = studentId + ' (offline)';
 
         loadProgress(studentId);
-        startTimer(CONFIG.STEP_TIMES[state.currentStep]);
+        startTimer(state.currentStep);
     }
 }
 
@@ -141,6 +190,7 @@ async function loadProgressOnline(studentId) {
 
         if (result.success && result.progress) {
             state.completedSteps = new Set(result.progress.completedSteps || []);
+            state.completedTimes = new Set(result.progress.completedTimes || []);
             state.currentStep = result.progress.currentStep || 1;
         } else {
             loadProgress(studentId);
@@ -159,6 +209,7 @@ function loadProgress(studentId) {
     if (saved) {
         const data = JSON.parse(saved);
         state.completedSteps = new Set(data.completedSteps || []);
+        state.completedTimes = new Set(data.completedTimes || []);
         state.currentStep = data.currentStep || 1;
         state.quizAnswers = data.quizAnswers || {};
     }
@@ -173,6 +224,7 @@ function saveProgress() {
     if (studentId) {
         localStorage.setItem('tebi1105_m1a_' + studentId, JSON.stringify({
             completedSteps: Array.from(state.completedSteps),
+            completedTimes: Array.from(state.completedTimes),
             currentStep: state.currentStep,
             quizAnswers: state.quizAnswers
         }));
@@ -197,6 +249,7 @@ async function saveProgressOnline() {
                 moduleId: CONFIG.MODULE_ID,
                 currentStep: state.currentStep,
                 completedSteps: Array.from(state.completedSteps),
+                completedTimes: Array.from(state.completedTimes),
                 timestamp: new Date().toISOString()
             })
         });
@@ -235,6 +288,8 @@ function goToStep(step) {
     if (content) content.classList.add('active');
 
     state.currentStep = step;
+    state.timerCompleted = state.completedTimes.has(step);
+
     updateStepper();
     updateNavigationButtons();
     document.getElementById('step-indicator').textContent = 'Paso ' + step + ' de ' + CONFIG.TOTAL_STEPS;
@@ -242,11 +297,25 @@ function goToStep(step) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // Iniciar temporizador para el nuevo paso
-    startTimer(CONFIG.STEP_TIMES[step]);
+    hideTimerCompleteMessage();
+    startTimer(step);
+}
+
+function canAdvance() {
+    // Puede avanzar si el tiempo del paso actual ya fue completado
+    return state.timerCompleted || state.completedTimes.has(state.currentStep);
 }
 
 function navigateStep(dir) {
-    if (dir > 0) state.completedSteps.add(state.currentStep);
+    // Si intenta avanzar pero no puede
+    if (dir > 0 && !canAdvance()) {
+        showNotification('Debes esperar a que termine el tiempo para continuar.');
+        return;
+    }
+
+    if (dir > 0) {
+        state.completedSteps.add(state.currentStep);
+    }
     goToStep(state.currentStep + dir);
     updateProgress();
 }
@@ -254,13 +323,18 @@ function navigateStep(dir) {
 function updateStepper() {
     document.querySelectorAll('.stepper-item').forEach(function(item) {
         const step = parseInt(item.dataset.step);
-        item.classList.remove('active', 'completed');
+        item.classList.remove('active', 'completed', 'time-completed');
 
         if (step === state.currentStep) {
             item.classList.add('active');
         } else if (state.completedSteps.has(step)) {
             item.classList.add('completed');
             item.querySelector('.stepper-circle').innerHTML = '<i class="fas fa-check text-white text-xs"></i>';
+        }
+
+        // Marcar si el tiempo fue completado
+        if (state.completedTimes.has(step)) {
+            item.classList.add('time-completed');
         }
     });
 }
@@ -269,9 +343,29 @@ function updateNavigationButtons() {
     document.getElementById('prev-btn').disabled = state.currentStep === 1;
 
     const nextBtn = document.getElementById('next-btn');
-    nextBtn.innerHTML = state.currentStep === CONFIG.TOTAL_STEPS
-        ? 'Finalizar <i class="fas fa-flag-checkered ml-2"></i>'
-        : 'Siguiente <i class="fas fa-arrow-right ml-2"></i>';
+    const canProceed = canAdvance();
+
+    // Actualizar estado del botón
+    nextBtn.disabled = !canProceed;
+
+    if (state.currentStep === CONFIG.TOTAL_STEPS) {
+        nextBtn.innerHTML = canProceed
+            ? 'Finalizar <i class="fas fa-flag-checkered ml-2"></i>'
+            : '<i class="fas fa-lock mr-2"></i>Finalizar';
+    } else {
+        nextBtn.innerHTML = canProceed
+            ? 'Siguiente <i class="fas fa-arrow-right ml-2"></i>'
+            : '<i class="fas fa-clock mr-2"></i>Espera el tiempo';
+    }
+
+    // Cambiar estilo visual
+    if (canProceed) {
+        nextBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+        nextBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+    } else {
+        nextBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+        nextBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+    }
 }
 
 // ==========================================
@@ -379,16 +473,20 @@ function setupEventListeners() {
         option.addEventListener('click', handleQuizAnswer);
     });
 
-    // Stepper clicks
+    // Stepper clicks - solo permite navegar a pasos con tiempo completado
     document.getElementById('stepper').addEventListener('click', function(e) {
         const item = e.target.closest('.stepper-item');
 
         if (item) {
             const step = parseInt(item.dataset.step);
-            const maxAccessibleStep = Math.max.apply(null, Array.from(state.completedSteps).concat([state.currentStep]));
 
-            if (step <= maxAccessibleStep) {
+            // Solo puede ir a pasos anteriores o pasos donde ya completó el tiempo
+            if (step < state.currentStep || state.completedTimes.has(step)) {
                 goToStep(step);
+            } else if (step === state.currentStep) {
+                // Ya está en este paso
+            } else {
+                showNotification('Debes completar el tiempo de los pasos anteriores primero.');
             }
         }
     });

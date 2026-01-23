@@ -15,7 +15,7 @@
 //
 // PESTANAS REQUERIDAS EN GOOGLE SHEETS:
 // - Estudiantes (columnas: ID, Nombre, Email)
-// - Progreso (columnas: studentId, moduleId, currentStep, completedSteps, timestamp)
+// - Progreso (columnas: studentId, moduleId, currentStep, completedSteps, completedTimes, timestamp)
 // - Respuestas (columnas: studentId, moduleId, questionNum, answer, isCorrect, timestamp)
 // - Tareas (se crea automaticamente si no existe)
 // ============================================
@@ -110,7 +110,8 @@ function getProgress(studentId, moduleId) {
         progress: {
           currentStep: data[i][2],
           completedSteps: data[i][3] ? data[i][3].toString().split(',').map(Number) : [],
-          timestamp: data[i][4]
+          completedTimes: data[i][4] ? data[i][4].toString().split(',').map(Number) : [],
+          timestamp: data[i][5]
         }
       };
     }
@@ -122,12 +123,14 @@ function getProgress(studentId, moduleId) {
 function saveProgress(data) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Progreso');
   const completedStepsStr = data.completedSteps ? data.completedSteps.join(',') : '';
+  const completedTimesStr = data.completedTimes ? data.completedTimes.join(',') : '';
 
   sheet.appendRow([
     data.studentId,
     data.moduleId,
     data.currentStep,
     completedStepsStr,
+    completedTimesStr,
     data.timestamp
   ]);
 }
