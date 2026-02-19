@@ -242,7 +242,7 @@ async function saveProgressOnline() {
         await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({
                 action: 'saveProgress',
                 studentId: studentId,
@@ -422,7 +422,7 @@ async function saveQuizAnswerOnline(questionNum, answer, isCorrect) {
         await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({
                 action: 'saveQuizAnswer',
                 studentId: studentId,
