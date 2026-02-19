@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulo 2: Estructuras Administrativas y Agencias Reguladoras - TEBI 1105</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .step-content { display: none; animation: fadeIn 0.5s ease-in-out; }
+        .step-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .stepper-item.completed .stepper-circle { background-color: #10b981; border-color: #10b981; }
+        .stepper-item.active .stepper-circle { background-color: #059669; border-color: #059669; box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.3); }
+        .concept-card { transition: all 0.3s ease; }
+        .concept-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); }
+        .level-card { transition: all 0.3s ease; }
+        .level-card:hover { transform: scale(1.02); }
+        .quiz-option { transition: all 0.2s ease; }
+        .quiz-option:hover:not(.selected):not(.correct):not(.incorrect) { background-color: #ecfdf5; border-color: #059669; }
+        .quiz-option.correct { background-color: #d1fae5; border-color: #10b981; }
+        .quiz-option.incorrect { background-color: #fee2e2; border-color: #ef4444; }
+        .progress-bar { transition: width 0.5s ease; }
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: white; border-radius: 1rem; padding: 2rem; max-width: 400px; width: 90%; }
+        .modal-hidden { display: none !important; }
+        .user-badge { background: linear-gradient(135deg, #059669, #047857); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; }
+        .timer-container { position: fixed; bottom: 20px; right: 20px; z-index: 50; background: linear-gradient(135deg, #1e3a5f, #0d1b2a); padding: 15px 25px; border-radius: 50px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); display: flex; align-items: center; gap: 12px; }
+        .timer-display { font-size: 1.5rem; font-weight: bold; color: #10b981; font-family: 'Courier New', monospace; min-width: 70px; text-align: center; }
+        .timer-warning { color: #f59e0b; } .timer-danger { color: #ef4444; animation: pulse 1s infinite; }
+        .timer-complete { color: #10b981; font-size: 1rem; }
+        .timer-container.timer-done { background: linear-gradient(135deg, #065f46, #047857); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .stepper-item.time-completed .stepper-circle { border-color: #10b981; }
+        .stepper-item:not(.completed):not(.active).time-completed .stepper-circle { background-color: #d1fae5; color: #065f46; }
+        .timer-label { color: #9ca3af; font-size: 0.75rem; text-transform: uppercase; }
+        .timer-icon { color: #10b981; font-size: 1.25rem; }
+        .step-image { width: 100%; max-height: 250px; object-fit: cover; border-radius: 12px; margin-bottom: 1.5rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+        .org-chart { display: flex; flex-direction: column; align-items: center; gap: 0; }
+        .org-node { background: white; border: 2px solid #e5e7eb; border-radius: 10px; padding: 10px 16px; text-align: center; position: relative; min-width: 140px; transition: all 0.3s ease; }
+        .org-node:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+        .org-node.top { background: linear-gradient(135deg, #1e3a5f, #0d1b2a); color: white; border-color: #1e3a5f; }
+        .org-node.exec { background: linear-gradient(135deg, #065f46, #047857); color: white; border-color: #065f46; }
+        .org-node.dept { background: linear-gradient(135deg, #1e40af, #1d4ed8); color: white; border-color: #1e40af; }
+        .org-node.biomed { background: linear-gradient(135deg, #b45309, #d97706); color: white; border-color: #b45309; animation: glowPulse 2s infinite; }
+        @keyframes glowPulse { 0%, 100% { box-shadow: 0 0 5px rgba(217, 119, 6, 0.3); } 50% { box-shadow: 0 0 20px rgba(217, 119, 6, 0.6); } }
+        .org-connector { width: 2px; height: 20px; background: #d1d5db; }
+        .org-row { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+        .org-branch { display: flex; flex-direction: column; align-items: center; }
+        .org-h-line { height: 2px; background: #d1d5db; }
+        .agency-card { transition: all 0.3s ease; cursor: pointer; }
+        .agency-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+        .flashcard-container { perspective: 1000px; cursor: pointer; }
+        .flashcard-inner { position: relative; width: 100%; height: 200px; transition: transform 0.6s; transform-style: preserve-3d; }
+        .flashcard-container.flipped .flashcard-inner { transform: rotateY(180deg); }
+        .flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; }
+        .flashcard-back { transform: rotateY(180deg); }
+        .drag-item { cursor: grab; padding: 10px 16px; border-radius: 8px; border: 2px solid #e5e7eb; background: white; transition: all 0.2s; user-select: none; }
+        .drag-item:active { cursor: grabbing; }
+        .drag-item.dragging { opacity: 0.5; transform: scale(0.95); }
+        .drop-zone { min-height: 50px; border: 2px dashed #d1d5db; border-radius: 8px; padding: 12px; transition: all 0.2s; }
+        .drop-zone.drag-over { border-color: #059669; background-color: #ecfdf5; }
+        .drop-zone.correct { border-color: #10b981; background-color: #d1fae5; border-style: solid; }
+        .drop-zone.incorrect { border-color: #ef4444; background-color: #fee2e2; border-style: solid; }
+        .accordion-header { cursor: pointer; transition: background-color 0.2s; }
+        .accordion-header:hover { background-color: #f3f4f6; }
+        .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+        .accordion-body.open { max-height: 1000px; }
+        .accordion-icon { transition: transform 0.3s; }
+        .accordion-header.active .accordion-icon { transform: rotate(180deg); }
+        .tooltip-term { border-bottom: 2px dotted #059669; cursor: help; position: relative; font-weight: 600; color: #065f46; }
+        .tooltip-term:hover .tooltip-text { visibility: visible; opacity: 1; }
+        .tooltip-text { visibility: hidden; opacity: 0; width: 250px; background-color: #1f2937; color: #fff; text-align: left; border-radius: 8px; padding: 10px 14px; position: absolute; z-index: 100; bottom: 125%; left: 50%; transform: translateX(-50%); transition: opacity 0.2s; font-weight: 400; font-size: 0.8rem; line-height: 1.4; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .tooltip-text::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: #1f2937 transparent transparent transparent; }
+        .task-timer-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: #f3f4f6; border-radius: 50px; border: 1px solid #d1d5db; }
+        .task-timer-badge.running { background: #fef3c7; border-color: #f59e0b; }
+        .task-timer-badge.done { background: #d1fae5; border-color: #10b981; }
+        .mini-quiz-option { transition: all 0.2s; cursor: pointer; }
+        .mini-quiz-option:hover:not(.mq-answered) { background-color: #ecfdf5; border-color: #059669; }
+        .mini-quiz-option.mq-correct { background-color: #d1fae5; border-color: #10b981; }
+        .mini-quiz-option.mq-incorrect { background-color: #fee2e2; border-color: #ef4444; }
+        .notes-panel { position: fixed; top: 0; right: -400px; width: 380px; height: 100%; background: white; box-shadow: -4px 0 20px rgba(0,0,0,0.15); z-index: 60; transition: right 0.3s ease; padding: 20px; overflow-y: auto; }
+        .notes-panel.open { right: 0; }
+        .notes-fab { position: fixed; bottom: 90px; right: 20px; z-index: 55; width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(124,58,237,0.4); transition: transform 0.2s; }
+        .notes-fab:hover { transform: scale(1.1); }
+        .glossary-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; display: none; align-items: center; justify-content: center; }
+        .glossary-modal.active { display: flex; }
+        .glossary-content { background: white; border-radius: 16px; padding: 2rem; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .badge-item { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 0.3s; }
+        .badge-item.locked { background: #e5e7eb; color: #9ca3af; filter: grayscale(1); }
+        .badge-item.unlocked { animation: badgePop 0.5s ease; }
+        @keyframes badgePop { 0% { transform: scale(0.5); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-user-graduate text-emerald-600 text-2xl"></i></div>
+                <h2 class="text-2xl font-bold text-gray-800">Bienvenido</h2>
+                <p class="text-gray-600 text-sm mt-1">TEBI 1105 - Módulo 2</p>
+            </div>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">ID de Estudiante</label>
+                    <input type="text" id="student-id" placeholder="Ej: A12345" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500" required>
+                </div>
+                <button type="submit" class="w-full py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700"><span>Ingresar</span> <i class="fas fa-arrow-right ml-2"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Timer Flotante -->
+    <div id="timer-container" class="timer-container" style="display: none;">
+        <i class="fas fa-clock timer-icon"></i>
+        <div><div class="timer-label">Tiempo restante</div><div id="timer-display" class="timer-display">00:00</div></div>
+    </div>
+
+    <!-- Notes FAB + Panel -->
+    <div class="notes-fab" onclick="toggleNotes()" title="Mis Notas"><i class="fas fa-sticky-note text-xl"></i></div>
+    <div id="notes-panel" class="notes-panel">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-gray-800"><i class="fas fa-sticky-note mr-2 text-purple-600"></i>Mis Notas</h3>
+            <button onclick="toggleNotes()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+        </div>
+        <p class="text-xs text-gray-500 mb-3">Paso <span id="notes-step-label">1</span> de 16</p>
+        <textarea id="student-notes" class="w-full h-64 p-3 border-2 border-purple-200 rounded-lg focus:border-purple-500 resize-none text-sm" placeholder="Escribe tus notas para este paso..." oninput="saveStudentNote()"></textarea>
+        <p class="text-xs text-gray-400 mt-2"><i class="fas fa-save mr-1"></i>Se guarda automaticamente</p>
+    </div>
+
+    <!-- Glossary Modal -->
+    <div id="glossary-modal" class="glossary-modal" onclick="if(event.target===this)toggleGlossary()">
+        <div class="glossary-content">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-gray-800"><i class="fas fa-book mr-2 text-emerald-600"></i>Glosario</h3>
+                <button onclick="toggleGlossary()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <input type="text" id="glossary-search" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 text-sm" placeholder="Buscar termino..." oninput="filterGlossary()">
+            <div id="glossary-list" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <!-- Badges Modal -->
+    <div id="badges-modal" class="glossary-modal" onclick="if(event.target===this)this.classList.remove('active')">
+        <div class="glossary-content">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-gray-800"><i class="fas fa-trophy mr-2 text-yellow-500"></i>Logros</h3>
+                <button onclick="document.getElementById('badges-modal').classList.remove('active')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div id="badges-grid" class="grid grid-cols-4 gap-4"></div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-emerald-700 to-emerald-900 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold">TEBI 1105</h1>
+                    <p class="text-emerald-200 text-sm">Introducción a la Tecnología Biomédica</p>
+                </div>
+                <div class="mt-4 md:mt-0 flex items-center gap-3">
+                    <button onclick="toggleGlossary()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-sm transition"><i class="fas fa-book mr-1"></i>Glosario</button>
+                    <button onclick="showBadges()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-sm transition"><i class="fas fa-trophy mr-1"></i>Logros</button>
+                    <div class="text-right">
+                        <div id="user-info" class="hidden mb-1"><span class="user-badge"><i class="fas fa-user mr-1"></i><span id="user-name">Estudiante</span></span></div>
+                        <p class="text-sm text-emerald-200">Instituto Tecnológico de Puerto Rico</p>
+                        <p class="text-xs text-emerald-300">Prof. Felipe Hernández Gerena</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Progress Bar -->
+    <div class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-gray-600">Progreso del módulo</span>
+                <span id="progress-text" class="text-sm font-semibold text-emerald-600">0%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div id="progress-bar" class="progress-bar bg-emerald-600 h-2 rounded-full" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <aside class="lg:w-1/4">
+                <div class="bg-white rounded-xl shadow-md p-6 sticky top-24">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4"><i class="fas fa-list-ol mr-2 text-emerald-600"></i>Contenido</h3>
+                    <div class="space-y-3" id="stepper"></div>
+                </div>
+            </aside>
+            <section class="lg:w-3/4">
+                <div class="bg-white rounded-xl shadow-md p-6 md:p-8">
+
+<!-- ========== STEP 1: Introducción ========== -->
+<div class="step-content active" data-step="1">
+    <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&q=80" alt="Hospital moderno" class="step-image">
+    <span class="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-4">Unidad II - Módulo 2</span>
+    <h2 class="text-3xl font-bold text-gray-800 mb-4">Empleabilidad, Estructuras Administrativas y Agencias Reguladoras</h2>
+    <p class="text-gray-600 text-lg mb-6">En este módulo explorarás las oportunidades de empleo para el BMET, la organización administrativa de instituciones hospitalarias y las agencias que regulan y acreditan la tecnología biomédica.</p>
+    <div class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl p-6 mb-8">
+        <h3 class="text-xl font-semibold mb-3"><i class="fas fa-bullseye mr-2"></i>Objetivos de Aprendizaje</h3>
+        <ul class="space-y-2">
+            <li class="flex items-start"><i class="fas fa-check-circle mr-2 mt-1"></i><span>Analizar las perspectivas de empleabilidad presentes y futuras para el BMET</span></li>
+            <li class="flex items-start"><i class="fas fa-check-circle mr-2 mt-1"></i><span>Describir las estructuras administrativas en instituciones médico-hospitalarias</span></li>
+            <li class="flex items-start"><i class="fas fa-check-circle mr-2 mt-1"></i><span>Identificar la estructura de un Departamento de Tecnología Biomédica</span></li>
+            <li class="flex items-start"><i class="fas fa-check-circle mr-2 mt-1"></i><span>Explicar el rol de las agencias reguladoras y acreditadoras (JCAHO, OSHA, FDA, AAMI, IEEE, NIST)</span></li>
+        </ul>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6 mb-8">
+        <div class="concept-card bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 text-center">
+            <div class="text-blue-600 text-3xl mb-3"><i class="fas fa-briefcase"></i></div>
+            <h4 class="font-semibold text-gray-800 mb-2">Empleabilidad</h4>
+            <p class="text-gray-600 text-sm">Oportunidades en hospitales, compañías de servicio, autoempleo y ventas.</p>
+        </div>
+        <div class="concept-card bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-6 text-center">
+            <div class="text-emerald-600 text-3xl mb-3"><i class="fas fa-sitemap"></i></div>
+            <h4 class="font-semibold text-gray-800 mb-2">Organización</h4>
+            <p class="text-gray-600 text-sm">Organigramas hospitalarios y estructura del departamento biomédico.</p>
+        </div>
+        <div class="concept-card bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 text-center">
+            <div class="text-purple-600 text-3xl mb-3"><i class="fas fa-shield-alt"></i></div>
+            <h4 class="font-semibold text-gray-800 mb-2">Regulación</h4>
+            <p class="text-gray-600 text-sm">Agencias que garantizan seguridad, calidad y estándares en equipos médicos.</p>
+        </div>
+    </div>
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+        <p class="text-yellow-800"><i class="fas fa-lightbulb mr-2"></i><strong>Dato clave:</strong> El BMET trabaja dentro de una estructura organizacional compleja donde la regulación y acreditación son fundamentales para la seguridad del paciente.</p>
+    </div>
+</div>
+
+<!-- ========== STEP 2: Empleabilidad + BLS + Mini-quiz ========== -->
+<div class="step-content" data-step="2">
+    <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&q=80" alt="Profesionales trabajando" class="step-image">
+    <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-4">Paso 2</span>
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Perspectivas de Empleabilidad del BMET</h2>
+    <p class="text-gray-600 mb-6">El campo de la tecnología biomédica ofrece diversas oportunidades de empleo. Veamos las cuatro áreas principales donde un BMET puede desarrollar su carrera.</p>
+    <div class="space-y-4 mb-6">
+        <div class="level-card bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-5 border-l-4 border-blue-500">
+            <div class="flex items-start">
+                <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white mr-4 flex-shrink-0"><i class="fas fa-hospital"></i></div>
+                <div>
+                    <h4 class="font-bold text-gray-800">1. Instalaciones Médico-Hospitalarias</h4>
+                    <p class="text-blue-600 text-sm">Empleo más común para BMETs</p>
+                    <p class="text-gray-600 text-sm mt-1">Mantenimiento de equipos como resonancia magnética, ventiladores y monitores de signos vitales. Un hospital grande puede tener más de 10,000 dispositivos médicos.</p>
+                    <div class="mt-2 bg-blue-100 rounded p-2"><p class="text-blue-800 text-xs"><i class="fas fa-robot mr-1"></i><strong>Tendencia:</strong> Creciente integración de IA en equipos médicos.</p></div>
+                </div>
+            </div>
+        </div>
+        <div class="level-card bg-gradient-to-r from-gray-50 to-emerald-50 rounded-xl p-5 border-l-4 border-emerald-500">
+            <div class="flex items-start">
+                <div class="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center text-white mr-4 flex-shrink-0"><i class="fas fa-building"></i></div>
+                <div>
+                    <h4 class="font-bold text-gray-800">2. Compañías de Servicio</h4>
+                    <p class="text-emerald-600 text-sm">GE Healthcare, Siemens Healthineers, Philips, etc.</p>
+                    <p class="text-gray-600 text-sm mt-1">Contratación por empresas especializadas que brindan servicio técnico y mantenimiento preventivo a múltiples instituciones.</p>
+                </div>
+            </div>
+        </div>
+        <div class="level-card bg-gradient-to-r from-gray-50 to-orange-50 rounded-xl p-5 border-l-4 border-orange-500">
+            <div class="flex items-start">
+                <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white mr-4 flex-shrink-0"><i class="fas fa-user-tie"></i></div>
+                <div>
+                    <h4 class="font-bold text-gray-800">3. Autoempleo</h4>
+                    <p class="text-orange-600 text-sm">Requiere experiencia y habilidades empresariales</p>
+                    <p class="text-gray-600 text-sm mt-1">Servicios especializados en áreas de alta demanda, como equipos de diálisis en clínicas de nefrología.</p>
+                </div>
+            </div>
+        </div>
+        <div class="level-card bg-gradient-to-r from-gray-50 to-purple-50 rounded-xl p-5 border-l-4 border-purple-500">
+            <div class="flex items-start">
+                <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-white mr-4 flex-shrink-0"><i class="fas fa-handshake"></i></div>
+                <div>
+                    <h4 class="font-bold text-gray-800">4. Representante de Venta</h4>
+                    <p class="text-purple-600 text-sm">Asesoría técnica + ventas</p>
+                    <p class="text-gray-600 text-sm mt-1">Asesoría técnica y venta de equipos médicos. Rol crítico en la selección de tecnología.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- BLS Data Panel -->
+    <div class="bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl p-6 mb-6">
+        <h4 class="text-lg font-bold mb-4 text-center"><i class="fas fa-chart-bar mr-2"></i>Datos del Bureau of Labor Statistics (BLS)</h4>
+        <div class="grid md:grid-cols-3 gap-4 text-center mb-4">
+            <div class="bg-white/10 rounded-lg p-4"><p class="text-3xl font-bold text-emerald-400">$60,780</p><p class="text-xs opacity-80 mt-1">Salario mediano anual (US)</p></div>
+            <div class="bg-white/10 rounded-lg p-4"><p class="text-3xl font-bold text-blue-400">+14%</p><p class="text-xs opacity-80 mt-1">Crecimiento proyectado 2022-2032</p></div>
+            <div class="bg-white/10 rounded-lg p-4"><p class="text-3xl font-bold text-yellow-400">~38K</p><p class="text-xs opacity-80 mt-1">Empleos en EE.UU.</p></div>
+        </div>
+        <div class="grid md:grid-cols-2 gap-4 text-center text-sm">
+            <div class="bg-white/10 rounded p-3"><i class="fas fa-map-marker-alt text-red-400 mr-1"></i>Puerto Rico: $28,000-$42,000 anual</div>
+            <div class="bg-white/10 rounded p-3"><i class="fas fa-arrow-up text-green-400 mr-1"></i>Crecimiento "mucho más rápido que el promedio"</div>
+        </div>
+    </div>
+    <!-- Mini Quiz Step 2 -->
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4" id="mini-quiz-2">
+        <h4 class="font-semibold text-blue-800 mb-3"><i class="fas fa-question-circle mr-2"></i>Checkpoint</h4>
+        <p class="text-gray-700 text-sm mb-3">Según BLS, el crecimiento proyectado para técnicos biomédicos es:</p>
+        <div class="space-y-2">
+            <button class="mini-quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" onclick="checkMiniQuiz(this,'mq2',false)">a) Más lento que el promedio</button>
+            <button class="mini-quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" onclick="checkMiniQuiz(this,'mq2',true)">b) Mucho más rápido que el promedio (14%)</button>
+            <button class="mini-quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" onclick="checkMiniQuiz(this,'mq2',false)">c) Sin cambio esperado</button>
+        </div>
+        <div id="mq2-feedback" class="hidden mt-2 p-2 rounded text-sm"></div>
+    </div>
+</div>
+
+<!-- ========== STEP 3: Video Empleabilidad ========== -->
+<div class="step-content" data-step="3">
+    <span class="inline-block px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium mb-4">Paso 3</span>
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Video: Oportunidades de Carrera en Tecnología Biomédica</h2>
+    <div class="bg-gray-100 rounded-xl p-4 mb-6">
+        <div class="video-container rounded-lg overflow-hidden">
+            <iframe src="https://www.youtube.com/embed/cEfiLLc3oZo" title="Carrera BMET" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+    </div>
+    <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+        <h4 class="font-semibold text-emerald-800 mb-2"><i class="fas fa-clipboard-list mr-2"></i>Mientras observas, identifica:</h4>
+        <ul class="text-emerald-700 text-sm space-y-1">
+            <li><i class="fas fa-check mr-2"></i>¿En qué tipos de instalaciones trabajan los BMETs?</li>
+            <li><i class="fas fa-check mr-2"></i>¿Qué habilidades buscan los empleadores?</li>
+            <li><i class="fas fa-check mr-2"></i>¿Cómo es el crecimiento profesional en este campo?</li>
+        </ul>
+    </div>
+</div>
+
+<!-- ========== STEP 4: TAREA - Reflexión Empleabilidad ========== -->
+<div class="step-content" data-step="4">
+    <span class="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium mb-4"><i class="fas fa-pencil-alt mr-1"></i>Tarea Escrita</span>
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Tarea: Reflexión sobre Empleabilidad</h2>
+    <div id="task-section-M2_reflexion_empleabilidad" class="bg-gradient-to-br from-green-50 to-teal-50 rounded-xl p-6 border-2 border-green-200">
+        <div class="flex items-center justify-between mb-4">
+            <h4 class="text-xl font-semibold text-green-800"><i class="fas fa-pencil-alt mr-2"></i>Reflexión: Empleabilidad BMET</h4>
+            <div id="task-timer-M2_reflexion_empleabilidad" class="task-timer-badge">
+                <i class="fas fa-clock text-gray-500"></i>
+                <span id="timer-minutes-M2_reflexion_empleabilidad" class="font-mono font-bold text-gray-600">10</span>
+                <span class="text-gray-500">:</span>
+                <span id="timer-seconds-M2_reflexion_empleabilidad" class="font-mono font-bold text-gray-600">00</span>
+            </div>
+        </div>
+        <div id="task-waiting-M2_reflexion_empleabilidad" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-info-circle text-blue-500 text-xl"></i>
+                <div>
+                    <p class="text-blue-800 font-medium">El cronometro iniciara cuando comiences a escribir</p>
+                    <p class="text-blue-600 text-sm">Tienes 10 minutos para completar esta tarea.</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg p-4 mb-4 border border-green-100">
+            <p class="text-gray-700 mb-2"><strong>Instrucciones:</strong></p>
+            <p class="text-gray-600 text-sm">Con base en lo aprendido sobre empleabilidad del BMET, responde:</p>
+            <ul class="text-gray-600 text-sm mt-2 ml-4 list-disc">
+                <li>¿Cuál de las 4 áreas de empleo te interesa más y por qué?</li>
+                <li>¿Qué habilidades necesitarías desarrollar para esa área?</li>
+                <li>¿Cómo podrían los datos de BLS influir en tu planificación de carrera?</li>
+            </ul>
+        </div>
+        <div id="task-input-container-M2_reflexion_empleabilidad">
+            <textarea id="task-response-M2_reflexion_empleabilidad" class="w-full h-48 p-4 border-2 border-green-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 resize-none" placeholder="Comienza a escribir tu respuesta aqui... El cronometro de 10 minutos iniciara automaticamente."></textarea>
+            <div class="flex items-center justify-between mt-3">
+                <div id="task-error-M2_reflexion_empleabilidad" class="hidden text-red-600 text-sm bg-red-50 px-4 py-2 rounded-lg"></div>
+                <span id="char-count-M2_reflexion_empleabilidad" class="text-sm text-gray-500 ml-auto">0 caracteres</span>
+            </div>
+        </div>
+        <div id="task-completed-M2_reflexion_empleabilidad" class="hidden">
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center"><i class="fas fa-check text-white text-lg"></i></div>
+                    <div><h5 class="font-semibold text-green-800">Tarea Completada</h5><p class="text-green-600 text-sm">Tu respuesta ha sido guardada exitosamente.</p></div>
+                </div>
+                <div class="bg-white rounded-lg p-3 border border-green-100 max-h-40 overflow-y-auto">
+                    <p class="text-xs text-gray-500 mb-1">Tu respuesta:</p>
+                    <p id="saved-response-M2_reflexion_empleabilidad" class="text-gray-700 text-sm whitespace-pre-wrap"></p>
+                </div>
+            </div>
+        </div>
+        <div id="task-timeout-M2_reflexion_empleabilidad" class="hidden">
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center"><i class="fas fa-clock text-white text-lg"></i></div>
+                    <div><h5 class="font-semibold text-amber-800">Tiempo Completado</h5><p class="text-amber-600 text-sm">Los 10 minutos han terminado. Tu respuesta fue guardada automaticamente.</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== STEP 5: Organigrama Hospitalario + Accordions ========== -->
+<div class="step-content" data-step="5">
+    <img src="https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=800&q=80" alt="Hospital" class="step-image">
+    <span class="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium mb-4">Paso 5</span>
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Organigrama de Instituciones Médico-Hospitalarias</h2>
+    <p class="text-gray-600 mb-6">Un hospital es una organización compleja con múltiples niveles jerárquicos. El organigrama define las líneas de autoridad, comunicación y toma de decisiones.</p>
+    <div class="bg-gradient-to-b from-slate-50 to-blue-50 rounded-xl p-6 mb-6 border border-slate-200 overflow-x-auto">
+        <h3 class="text-lg font-bold text-center text-gray-800 mb-6"><i class="fas fa-sitemap mr-2 text-blue-600"></i>Estructura Jerárquica Hospitalaria</h3>
+        <div class="org-chart min-w-[600px]">
+            <div class="org-node top mx-auto"><i class="fas fa-landmark mr-1"></i><div class="font-bold text-sm">Junta de Directores</div><div class="text-xs opacity-80">Board of Directors</div></div>
+            <div class="org-connector mx-auto"></div>
+            <div class="org-node exec mx-auto"><i class="fas fa-user-tie mr-1"></i><div class="font-bold text-sm">Director General (CEO)</div><div class="text-xs opacity-80">Administrador del Hospital</div></div>
+            <div class="org-connector mx-auto"></div>
+            <div class="org-h-line mx-auto" style="width: 80%;"></div>
+            <div class="org-row">
+                <div class="org-branch"><div class="org-connector"></div><div class="org-node dept"><i class="fas fa-heartbeat mr-1"></i><div class="font-bold text-xs">VP Servicios Terapéuticos</div><div class="text-xs opacity-80">Medicina, Cirugía, Enfermería</div></div></div>
+                <div class="org-branch"><div class="org-connector"></div><div class="org-node dept"><i class="fas fa-x-ray mr-1"></i><div class="font-bold text-xs">VP Servicios Diagnósticos</div><div class="text-xs opacity-80">Laboratorio, Radiología</div></div></div>
+                <div class="org-branch"><div class="org-connector"></div><div class="org-node dept"><i class="fas fa-calculator mr-1"></i><div class="font-bold text-xs">VP Finanzas (CFO)</div><div class="text-xs opacity-80">Presupuesto, Facturación</div></div></div>
+                <div class="org-branch"><div class="org-connector"></div><div class="org-node dept"><i class="fas fa-users-cog mr-1"></i><div class="font-bold text-xs">VP Administración</div><div class="text-xs opacity-80">RRHH, Legal, Facilidades</div></div></div>
+                <div class="org-branch"><div class="org-connector"></div><div class="org-node biomed"><i class="fas fa-microchip mr-1"></i><div class="font-bold text-xs">VP Servicios de Apoyo</div><div class="text-xs opacity-80">Incluye Tecnología Biomédica</div></div></div>
+            </div>
+        </div>
+    </div>
+    <!-- Accordion: Detalles por nivel -->
+    <div class="space-y-2 mb-6">
+        <div class="border rounded-xl overflow-hidden">
+            <div class="accordion-header flex items-center justify-between p-4 bg-gray-50" onclick="toggleAccordion(this)">
+                <span class="font-semibold text-gray-800"><i class="fas fa-landmark text-gray-600 mr-2"></i>Nivel 1: Junta de Directores</span>
+                <i class="fas fa-chevron-down accordion-icon text-gray-400"></i>
+            </div>
+            <div class="accordion-body px-4"><div class="py-4 text-sm text-gray-600">
+                <p>Máxima autoridad del hospital. Responsable de políticas generales, aprobación de presupuestos y nombramiento del CEO. Compuesta por miembros de la comunidad, profesionales de salud y representantes financieros.</p>
+            </div></div>
+        </div>
+        <div class="border rounded-xl overflow-hidden">
+            <div class="accordion-header flex items-center justify-between p-4 bg-gray-50" onclick="toggleAccordion(this)">
+                <span class="font-semibold text-gray-800"><i class="fas fa-user-tie text-emerald-600 mr-2"></i>Nivel 2: Director General (CEO)</span>
+                <i class="fas fa-chevron-down accordion-icon text-gray-400"></i>
+            </div>
+            <div class="accordion-body px-4"><div class="py-4 text-sm text-gray-600">
+                <p>Ejecuta las políticas de la Junta. Administra las operaciones diarias, supervisa a los vicepresidentes y reporta directamente a la Junta.</p>
+            </div></div>
+        </div>
+        <div class="border rounded-xl overflow-hidden">
+            <div class="accordion-header flex items-center justify-between p-4 bg-gray-50" onclick="toggleAccordion(this)">
+                <span class="font-semibold text-gray-800"><i class="fas fa-users text-blue-600 mr-2"></i>Niveles 3-5: VP, Gerentes, Proveedores</span>
+                <i class="fas fa-chevron-down accordion-icon text-gray-400"></i>
+            </div>
+            <div class="accordion-body px-4"><div class="py-4 text-sm text-gray-600">
+                <p><strong>Nivel 3 - Vicepresidentes:</strong> Dirigen áreas funcionales (terapéuticos, diagnósticos, finanzas, administración, apoyo).</p>
+                <p class="mt-2"><strong>Nivel 4 - Gerentes:</strong> Supervisan departamentos específicos dentro de cada área.</p>
+                <p class="mt-2"><strong>Nivel 5 - Proveedores de Servicio:</strong> Personal operativo que brinda atención directa o servicios de soporte (incluye BMETs).</p>
+            </div></div>
+        </div>
+    </div>
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+        <p class="text-yellow-800 text-sm"><i class="fas fa-lightbulb mr-2"></i><strong>Importante:</strong> El Departamento de Tecnología Biomédica generalmente reporta al VP de Servicios de Apoyo o directamente al Director de Operaciones.</p>
+    </div>
+</div>
+
+<!-- ========== STEP 6: Depto. Biomédico + Accordions ========== -->
+<div class="step-content" data-step="6">
+    <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&q=80" alt="Taller biomédico" class="step-image">
+    <span class="inline-block px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium mb-4">Paso 6</span>
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Estructura del Departamento de Tecnología Biomédica</h2>
+    <p class="text-gray-600 mb-6">El departamento de tecnología biomédica es responsable de la gestión integral de equipos médicos.</p>
+    <div class="bg-gradient-to-b from-amber-50 to-orange-50 rounded-xl p-6 mb-6 border border-amber-200 overflow-x-auto">
+        <h3 class="text-lg font-bold text-center text-gray-800 mb-6"><i class="fas fa-microchip mr-2 text-amber-600"></i>Organigrama del Departamento Biomédico</h3>
+        <div class="org-chart min-w-[500px]">
+            <div class="org-node exec mx-auto" style="background: linear-gradient(135deg, #92400e, #b45309); border-color: #92400e;"><i class="fas fa-user-shield mr-1"></i><div class="font-bold text-sm">Director de Tecnología Biomédica</div><div class="text-xs opacity-80">Clinical/Biomedical Engineer</div></div>
+            <div class="org-connector mx-auto"></div>
+            <div class="org-h-line mx-auto" style="width: 70%;"></div>
+            <div class="org-row">
+                <div class="org-branch"><div class="org-connector"></div><div class="org-node" style="border-color: #d97706; background: #fffbeb;"><i class="fas fa-users text-amber-600"></i><div class="font-bold text-xs text-gray-800">BMET Supervisor</div></div></div>
+                <div class="org-branch"><div class="org-connector"></div><div class="org-node" style="border-color: #d97706; background: #fffbeb;"><i class="fas fa-clipboard-check text-amber-600"></i><div class="font-bold text-xs text-gray-800">Coordinador PM</div></div></div>
+                <div class="org-branch"><div class="org-connector"></div><div class="org-node" style="border-color: #d97706; background: #fffbeb;"><i class="fas fa-file-contract text-amber-600"></i><div class="font-bold text-xs text-gray-800">Coord. Contratos</div></div></div>
+            </div>
+            <div class="org-connector mx-auto"></div>
+            <div class="org-h-line mx-auto" style="width: 85%;"></div>
+            <div class="org-row">
+                <div class="org-branch"><div class="org-connector"></div><div class="org-node" style="border-color: #2563eb; background: #eff6ff;"><i class="fas fa-wrench text-blue-600"></i><div class="font-bold text-xs text-gray-800">BMET I, II, III</div></div></div>
+                <div class="org-branch"><div class="org-connector"></div><div class="org-node" style="border-color: #7c3aed; background: #f5f3ff;"><i class="fas fa-x-ray text-purple-600"></i><div class="font-bold text-xs text-gray-800">RES (Radiología)</div></div></div>
+                <div class="org-branch"><div class="org-connector"></div><div class="org-node" style="border-color: #0891b2; background: #ecfeff;"><i class="fas fa-flask text-cyan-600"></i><div class="font-bold text-xs text-gray-800">LES (Laboratorio)</div></div></div>
+                <div class="org-branch"><div class="org-connector"></div><div class="org-node" style="border-color: #059669; background: #ecfdf5;"><i class="fas fa-network-wired text-emerald-600"></i><div class="font-bold text-xs text-gray-800">Redes/IT Médico</div></div></div>
+            </div>
+        </div>
+    </div>
+    <!-- Accordion: Funciones -->
+    <div class="space-y-2 mb-6">
+        <div class="border rounded-xl overflow-hidden">
+            <div class="accordion-header flex items-center justify-between p-4 bg-amber-50" onclick="toggleAccordion(this)">
+                <span class="font-semibold text-gray-800"><i class="fas fa-tasks text-amber-600 mr-2"></i>Funciones Principales</span>
+                <i class="fas fa-chevron-down accordion-icon text-gray-400"></i>
+            </div>
+            <div class="accordion-body px-4"><div class="py-4 text-sm text-gray-600">
+                <ul class="space-y-1"><li><i class="fas fa-check-circle text-amber-500 mr-2"></i>Gestión de inventario de equipos médicos</li><li><i class="fas fa-check-circle text-amber-500 mr-2"></i>Mantenimiento preventivo programado</li><li><i class="fas fa-check-circle text-amber-500 mr-2"></i>Reparación correctiva de equipos</li><li><i class="fas fa-check-circle text-amber-500 mr-2"></i>Evaluación de tecnología nueva</li><li><i class="fas fa-check-circle text-amber-500 mr-2"></i>Capacitación del personal clínico</li></ul>
+            </div></div>
+        </div>
+        <div class="border rounded-xl overflow-hidden">
+            <div class="accordion-header flex items-center justify-between p-4 bg-blue-50" onclick="toggleAccordion(this)">
+                <span class="font-semibold text-gray-800"><i class="fas fa-chart-pie text-blue-600 mr-2"></i>Planificación Estratégica</span>
+                <i class="fas fa-chevron-down accordion-icon text-gray-400"></i>
+            </div>
+            <div class="accordion-body px-4"><div class="py-4 text-sm text-gray-600">
+                <ul class="space-y-1"><li><i class="fas fa-check-circle text-blue-500 mr-2"></i>Presupuesto de reemplazo de equipos</li><li><i class="fas fa-check-circle text-blue-500 mr-2"></i>Análisis de costo-beneficio</li><li><i class="fas fa-check-circle text-blue-500 mr-2"></i>Cumplimiento regulatorio</li><li><i class="fas fa-check-circle text-blue-500 mr-2"></i>Gestión de contratos de servicio</li><li><i class="fas fa-check-circle text-blue-500 mr-2"></i>Métricas de rendimiento (KPIs)</li></ul>
+            </div></div>
+        </div>
+    </div>
+    <!-- Mini Quiz Step 6 -->
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4" id="mini-quiz-6">
+        <h4 class="font-semibold text-amber-800 mb-3"><i class="fas fa-question-circle mr-2"></i>Checkpoint</h4>
+        <p class="text-gray-700 text-sm mb-3">¿A quién típicamente reporta el Departamento de Tecnología Biomédica?</p>
+        <div class="space-y-2">
+            <button class="mini-quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" onclick="checkMiniQuiz(this,'mq6',false)">a) Directamente al CEO</button>
+            <button class="mini-quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" onclick="checkMiniQuiz(this,'mq6',true)">b) VP de Servicios de Apoyo u Operaciones</button>
+            <button class="mini-quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" onclick="checkMiniQuiz(this,'mq6',false)">c) Departamento de Enfermería</button>
+        </div>
+        <div id="mq6-feedback" class="hidden mt-2 p-2 rounded text-sm"></div>
+    </div>
+</div>
+
+<!-- ========== STEP 7: Video Estructura ========== -->
+<div class="step-content" data-step="7">
+    <span class="inline-block px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium mb-4">Paso 7</span>
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Video: Estructura Organizacional Hospitalaria</h2>
+    <div class="bg-gray-100 rounded-xl p-4 mb-6">
+        <div class="video-container rounded-lg overflow-hidden">
+            <iframe src="https://www.youtube.com/embed/RPQX7gR2sHs" title="Hospital Organizational Structure" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+    </div>
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+        <h4 class="font-semibold text-blue-800 mb-2"><i class="fas fa-clipboard-list mr-2"></i>Puntos a identificar:</h4>
+        <ul class="text-blue-700 text-sm space-y-1">
+            <li><i class="fas fa-check mr-2"></i>Los niveles jerárquicos dentro de un hospital</li>
+            <li><i class="fas fa-check mr-2"></i>Cómo se relacionan los departamentos entre sí</li>
+            <li><i class="fas fa-check mr-2"></i>Dónde se ubica el departamento de tecnología biomédica</li>
+        </ul>
+    </div>
+</div>
+
+<!-- ========== STEP 8: TAREA - Análisis Organizacional ========== -->
+<div class="step-content" data-step="8">
+    <span class="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium mb-4"><i class="fas fa-pencil-alt mr-1"></i>Tarea Escrita</span>
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Tarea: Análisis Organizacional</h2>
+    <div id="task-section-M2_analisis_organizacional" class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 border-2 border-amber-200">
+        <div class="flex items-center justify-between mb-4">
+            <h4 class="text-xl font-semibold text-amber-800"><i class="fas fa-pencil-alt mr-2"></i>Análisis: Estructura Hospitalaria</h4>
+            <div id="task-timer-M2_analisis_organizacional" class="task-timer-badge">
+                <i class="fas fa-clock text-gray-500"></i>
+                <span id="timer-minutes-M2_analisis_organizacional" class="font-mono font-bold text-gray-600">10</span>
+                <span class="text-gray-500">:</span>
+                <span id="timer-seconds-M2_analisis_organizacional" class="font-mono font-bold text-gray-600">00</span>
+            </div>
+        </div>
+        <div id="task-waiting-M2_analisis_organizacional" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-info-circle text-blue-500 text-xl"></i>
+                <div><p class="text-blue-800 font-medium">El cronometro iniciara cuando comiences a escribir</p><p class="text-blue-600 text-sm">Tienes 10 minutos para completar esta tarea.</p></div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg p-4 mb-4 border border-amber-100">
+            <p class="text-gray-700 mb-2"><strong>Instrucciones:</strong></p>
+            <p class="text-gray-600 text-sm">Analiza la estructura organizacional hospitalaria y responde:</p>
+            <ul class="text-gray-600 text-sm mt-2 ml-4 list-disc">
+                <li>¿Por qué es importante que el BMET entienda la jerarquía del hospital?</li>
+                <li>Si un equipo de UCI falla, ¿qué cadena de comunicación seguirías?</li>
+                <li>¿Cómo beneficia tener un departamento biomédico centralizado vs descentralizado?</li>
+            </ul>
+        </div>
+        <div id="task-input-container-M2_analisis_organizacional">
+            <textarea id="task-response-M2_analisis_organizacional" class="w-full h-48 p-4 border-2 border-amber-200 rounded-lg focus:border-amber-500 focus:ring-2 focus:ring-amber-200 resize-none" placeholder="Comienza a escribir tu respuesta aqui..."></textarea>
+            <div class="flex items-center justify-between mt-3">
+                <div id="task-error-M2_analisis_organizacional" class="hidden text-red-600 text-sm bg-red-50 px-4 py-2 rounded-lg"></div>
+                <span id="char-count-M2_analisis_organizacional" class="text-sm text-gray-500 ml-auto">0 caracteres</span>
+            </div>
+        </div>
+        <div id="task-completed-M2_analisis_organizacional" class="hidden">
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div class="flex items-center gap-3 mb-3"><div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center"><i class="fas fa-check text-white text-lg"></i></div><div><h5 class="font-semibold text-green-800">Tarea Completada</h5><p class="text-green-600 text-sm">Tu respuesta ha sido guardada exitosamente.</p></div></div>
+                <div class="bg-white rounded-lg p-3 border border-green-100 max-h-40 overflow-y-auto"><p class="text-xs text-gray-500 mb-1">Tu respuesta:</p><p id="saved-response-M2_analisis_organizacional" class="text-gray-700 text-sm whitespace-pre-wrap"></p></div>
+            </div>
+        </div>
+        <div id="task-timeout-M2_analisis_organizacional" class="hidden">
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <div class="flex items-center gap-3"><div class="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center"><i class="fas fa-clock text-white text-lg"></i></div><div><h5 class="font-semibold text-amber-800">Tiempo Completado</h5><p class="text-amber-600 text-sm">Los 10 minutos han terminado. Tu respuesta fue guardada automaticamente.</p></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== STEP 9: Agencias Intro + Flashcards ========== -->
+<div class="step-content" data-step="9">
+    <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80" alt="Regulación" class="step-image">
+    <span class="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium mb-4">Paso 9</span>
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Agencias Reguladoras y Acreditadoras</h2>
+    <p class="text-gray-600 mb-6">Las agencias reguladoras establecen los estándares que garantizan la seguridad y calidad de los equipos biomédicos. El BMET debe conocerlas para asegurar cumplimiento normativo.</p>
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl p-6 mb-6">
+        <h3 class="text-xl font-semibold mb-4"><i class="fas fa-shield-alt mr-2"></i>6 Agencias Clave para el BMET</h3>
+        <p class="text-purple-200 text-sm mb-4">Haz clic en cada tarjeta para voltearla y ver los detalles</p>
+    </div>
+    <!-- Flashcards -->
+    <div class="grid md:grid-cols-3 gap-4 mb-6" id="flashcards-container">
+        <div class="flashcard-container" onclick="this.classList.toggle('flipped')">
+            <div class="flashcard-inner"><div class="flashcard-front bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg"><i class="fas fa-hospital-alt text-3xl mb-2"></i><h4 class="font-bold text-lg">JCAHO</h4><p class="text-xs opacity-80 mt-1">Clic para voltear</p></div><div class="flashcard-back bg-white border-2 border-red-300 shadow-lg"><h4 class="font-bold text-red-700 mb-2">JCAHO</h4><p class="text-xs text-gray-600">Joint Commission on Accreditation of Healthcare Organizations</p><p class="text-xs text-gray-500 mt-2">Acredita hospitales basándose en estándares de seguridad y calidad del paciente.</p></div></div>
+        </div>
+        <div class="flashcard-container" onclick="this.classList.toggle('flipped')">
+            <div class="flashcard-inner"><div class="flashcard-front bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg"><i class="fas fa-hard-hat text-3xl mb-2"></i><h4 class="font-bold text-lg">OSHA</h4><p class="text-xs opacity-80 mt-1">Clic para voltear</p></div><div class="flashcard-back bg-white border-2 border-amber-300 shadow-lg"><h4 class="font-bold text-amber-700 mb-2">OSHA</h4><p class="text-xs text-gray-600">Occupational Safety and Health Administration</p><p class="text-xs text-gray-500 mt-2">Normas de seguridad en el lugar de trabajo: radiación, ergonomía, HAZMAT.</p></div></div>
+        </div>
+        <div class="flashcard-container" onclick="this.classList.toggle('flipped')">
+            <div class="flashcard-inner"><div class="flashcard-front bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg"><i class="fas fa-bolt text-3xl mb-2"></i><h4 class="font-bold text-lg">IEEE</h4><p class="text-xs opacity-80 mt-1">Clic para voltear</p></div><div class="flashcard-back bg-white border-2 border-blue-300 shadow-lg"><h4 class="font-bold text-blue-700 mb-2">IEEE</h4><p class="text-xs text-gray-600">Institute for Electrical and Electronic Engineers</p><p class="text-xs text-gray-500 mt-2">Estándares de seguridad eléctrica para dispositivos médicos.</p></div></div>
+        </div>
+        <div class="flashcard-container" onclick="this.classList.toggle('flipped')">
+            <div class="flashcard-inner"><div class="flashcard-front bg-gradient-to-br from-teal-600 to-teal-700 text-white shadow-lg"><i class="fas fa-ruler-combined text-3xl mb-2"></i><h4 class="font-bold text-lg">NIST</h4><p class="text-xs opacity-80 mt-1">Clic para voltear</p></div><div class="flashcard-back bg-white border-2 border-teal-300 shadow-lg"><h4 class="font-bold text-teal-700 mb-2">NIST</h4><p class="text-xs text-gray-600">National Institute of Standards and Technology</p><p class="text-xs text-gray-500 mt-2">Guías de calibración, estándares de medición y trazabilidad metrológica.</p></div></div>
+        </div>
+        <div class="flashcard-container" onclick="this.classList.toggle('flipped')">
+            <div class="flashcard-inner"><div class="flashcard-front bg-gradient-to-br from-emerald-600 to-emerald-700 text-white shadow-lg"><i class="fas fa-medkit text-3xl mb-2"></i><h4 class="font-bold text-lg">AAMI</h4><p class="text-xs opacity-80 mt-1">Clic para voltear</p></div><div class="flashcard-back bg-white border-2 border-emerald-300 shadow-lg"><h4 class="font-bold text-emerald-700 mb-2">AAMI</h4><p class="text-xs text-gray-600">Association for the Advancement of Medical Instrumentation</p><p class="text-xs text-gray-500 mt-2">Protocolos de mantenimiento, certificaciones CBET/CLES/CRES.</p></div></div>
+        </div>
+        <div class="flashcard-container" onclick="this.classList.toggle('flipped')">
+            <div class="flashcard-inner"><div class="flashcard-front bg-gradient-to-br from-indigo-600 to-indigo-700 text-white shadow-lg"><i class="fas fa-prescription-bottle-alt text-3xl mb-2"></i><h4 class="font-bold text-lg">FDA</h4><p class="text-xs opacity-80 mt-1">Clic para voltear</p></div><div class="flashcard-back bg-white border-2 border-indigo-300 shadow-lg"><h4 class="font-bold text-indigo-700 mb-2">FDA</h4><p class="text-xs text-gray-600">Food and Drug Administration</p><p class="text-xs text-gray-500 mt-2">Regulación de dispositivos médicos: clasificación, aprobación, recalls.</p></div></div>
+        </div>
+    </div>
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+        <p class="text-yellow-800 text-sm"><i class="fas fa-lightbulb mr-2"></i><strong>¿Por qué importa?</strong> Un hospital que no cumple con estas agencias puede perder su acreditación, afectando su capacidad para recibir pagos de seguros.</p>
+    </div>
+</div>
+
+<!-- ========== STEP 10: JCAHO y OSHA + Tooltips + Escenarios ========== -->
+<div class="step-content" data-step="10">
+    <span class="inline-block px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-sm font-medium mb-4">Paso 10</span>
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">JCAHO y OSHA</h2>
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white border-2 border-red-300 rounded-xl overflow-hidden">
+            <div class="bg-red-600 text-white p-4"><h3 class="text-lg font-bold"><i class="fas fa-hospital-alt mr-2"></i>JCAHO</h3><p class="text-red-100 text-sm">Joint Commission on Accreditation of Healthcare Organizations</p></div>
+            <div class="p-4">
+                <div class="bg-red-50 rounded-lg p-3 mb-3"><p class="text-red-700 text-sm">Acreditación de organizaciones de atención médica basada en estándares de seguridad y calidad.</p></div>
+                <ul class="text-gray-600 text-sm space-y-2">
+                    <li><i class="fas fa-check text-red-500 mr-2"></i>Evaluación continua de estándares</li>
+                    <li><i class="fas fa-check text-red-500 mr-2"></i>Auditorías de <span class="tooltip-term">mantenimiento preventivo<span class="tooltip-text">Inspecciones y servicios programados regularmente para prevenir fallas en equipos médicos antes de que ocurran.</span></span></li>
+                    <li><i class="fas fa-check text-red-500 mr-2"></i>Documentación de seguridad del equipo</li>
+                </ul>
+            </div>
+        </div>
+        <div class="bg-white border-2 border-amber-300 rounded-xl overflow-hidden">
+            <div class="bg-amber-600 text-white p-4"><h3 class="text-lg font-bold"><i class="fas fa-hard-hat mr-2"></i>OSHA</h3><p class="text-amber-100 text-sm">Occupational Safety and Health Administration</p></div>
+            <div class="p-4">
+                <div class="bg-amber-50 rounded-lg p-3 mb-3"><p class="text-amber-700 text-sm">Normas de seguridad en el lugar de trabajo para proteger a los trabajadores.</p></div>
+                <ul class="text-gray-600 text-sm space-y-2">
+                    <li><i class="fas fa-check text-amber-500 mr-2"></i>Protección contra radiación</li>
+                    <li><i class="fas fa-check text-amber-500 mr-2"></i>Ergonomía en el trabajo</li>
+                    <li><i class="fas fa-check text-amber-500 mr-2"></i>Seguridad eléctrica</li>
+                    <li><i class="fas fa-check text-amber-500 mr-2"></i>Materiales peligrosos (<span class="tooltip-term">HAZMAT<span class="tooltip-text">Hazardous Materials - sustancias que representan riesgo para la salud, como químicos de laboratorio, residuos bioinfecciosos y gases medicinales.</span></span>)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- Escenario real -->
+    <div class="bg-gradient-to-r from-red-50 to-amber-50 rounded-xl p-5 border border-red-200 mb-4">
+        <h4 class="font-semibold text-gray-800 mb-2"><i class="fas fa-exclamation-triangle mr-2 text-red-500"></i>Escenario Real</h4>
+        <p class="text-gray-700 text-sm mb-2"><strong>Situación:</strong> Un hospital en Texas perdió su acreditación JCAHO en 2019 después de que inspectores encontraron que el 40% de los desfibriladores no tenían mantenimiento preventivo documentado en los últimos 12 meses.</p>
+        <p class="text-gray-700 text-sm"><strong>Consecuencia:</strong> El hospital tuvo que suspender admisiones electivas y perdió contratos con aseguradoras hasta completar un plan de acción correctiva. El departamento biomédico fue reestructurado completamente.</p>
+    </div>
+    <div class="bg-gradient-to-r from-red-50 to-amber-50 rounded-xl p-4 border border-red-200">
+        <h4 class="font-semibold text-gray-800 mb-2"><i class="fas fa-clipboard-check mr-2 text-red-600"></i>Ejemplo Práctico</h4>
+        <p class="text-gray-600 text-sm"><strong>JCAHO:</strong> Auditoría donde se verifica que todos los desfibriladores hayan sido inspeccionados según su calendario programado.</p>
+        <p class="text-gray-600 text-sm mt-2"><strong>OSHA:</strong> Implementación de protección contra radiación para técnicos que mantienen equipos de imagen.</p>
+    </div>
+</div>
+
+<!-- ========== STEP 11: IEEE y NIST + Tooltips ========== -->
+<div class="step-content" data-step="11">
+    <span class="inline-block px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-sm font-medium mb-4">Paso 11</span>
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">IEEE y NIST</h2>
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white border-2 border-blue-300 rounded-xl overflow-hidden">
+            <div class="bg-blue-700 text-white p-4"><h3 class="text-lg font-bold"><i class="fas fa-bolt mr-2"></i>IEEE</h3><p class="text-blue-100 text-sm">Institute for Electrical and Electronic Engineers</p></div>
+            <div class="p-4">
+                <div class="bg-blue-50 rounded-lg p-3 mb-3"><p class="text-blue-700 text-sm">Estándares tecnológicos en ingeniería biomédica y electrónica.</p></div>
+                <ul class="text-gray-600 text-sm space-y-2">
+                    <li><i class="fas fa-check text-blue-500 mr-2"></i>Estándares de <span class="tooltip-term">corriente de fuga<span class="tooltip-text">Corriente eléctrica no intencional que fluye a través del paciente o usuario. Los límites máximos son regulados para evitar electrocución.</span></span></li>
+                    <li><i class="fas fa-check text-blue-500 mr-2"></i>Normas para dispositivos médicos</li>
+                    <li><i class="fas fa-check text-blue-500 mr-2"></i>Recursos educativos y certificaciones</li>
+                </ul>
+            </div>
+        </div>
+        <div class="bg-white border-2 border-teal-300 rounded-xl overflow-hidden">
+            <div class="bg-teal-700 text-white p-4"><h3 class="text-lg font-bold"><i class="fas fa-ruler-combined mr-2"></i>NIST</h3><p class="text-teal-100 text-sm">National Institute of Standards and Technology</p></div>
+            <div class="p-4">
+                <div class="bg-teal-50 rounded-lg p-3 mb-3"><p class="text-teal-700 text-sm">Estándares para precisión y fiabilidad de dispositivos médicos.</p></div>
+                <ul class="text-gray-600 text-sm space-y-2">
+                    <li><i class="fas fa-check text-teal-500 mr-2"></i>Guías de calibración de equipos</li>
+                    <li><i class="fas fa-check text-teal-500 mr-2"></i>Estándares de medición</li>
+                    <li><i class="fas fa-check text-teal-500 mr-2"></i><span class="tooltip-term">Trazabilidad metrológica<span class="tooltip-text">Propiedad de un resultado de medición por la cual puede relacionarse con una referencia, generalmente estándares nacionales o internacionales, a través de una cadena ininterrumpida de calibraciones.</span></span></li>
+                    <li><i class="fas fa-check text-teal-500 mr-2"></i>Ciberseguridad en equipos médicos</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="bg-gradient-to-r from-blue-50 to-teal-50 rounded-xl p-4 border border-blue-200">
+        <h4 class="font-semibold text-gray-800 mb-2"><i class="fas fa-clipboard-check mr-2 text-blue-600"></i>Ejemplo Práctico</h4>
+        <p class="text-gray-600 text-sm"><strong>IEEE:</strong> Asegurar que un monitor cardíaco cumpla con estándares de corriente de fuga máxima permitida.</p>
+        <p class="text-gray-600 text-sm mt-2"><strong>NIST:</strong> Calibración de monitores de signos vitales en UCI usando patrones trazables a estándares nacionales.</p>
+    </div>
+</div>
+
+<!-- ========== STEP 12: AAMI y FDA + Recalls + Tooltips ========== -->
+<div class="step-content" data-step="12">
+    <span class="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-4">Paso 12</span>
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">AAMI y FDA</h2>
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white border-2 border-emerald-300 rounded-xl overflow-hidden">
+            <div class="bg-emerald-700 text-white p-4"><h3 class="text-lg font-bold"><i class="fas fa-medkit mr-2"></i>AAMI</h3><p class="text-emerald-100 text-sm">Association for the Advancement of Medical Instrumentation</p></div>
+            <div class="p-4">
+                <ul class="text-gray-600 text-sm space-y-2">
+                    <li><i class="fas fa-check text-emerald-500 mr-2"></i>Protocolos de mantenimiento de dispositivos</li>
+                    <li><i class="fas fa-check text-emerald-500 mr-2"></i>Certificaciones: <span class="tooltip-term">CBET<span class="tooltip-text">Certified Biomedical Equipment Technician - certificación profesional que valida competencia en mantenimiento de equipos biomédicos generales.</span></span>, CLES, CRES</li>
+                    <li><i class="fas fa-check text-emerald-500 mr-2"></i>Guías de uso seguro de equipos</li>
+                    <li><i class="fas fa-check text-emerald-500 mr-2"></i>Estándares de esterilización</li>
+                </ul>
+            </div>
+        </div>
+        <div class="bg-white border-2 border-indigo-300 rounded-xl overflow-hidden">
+            <div class="bg-indigo-700 text-white p-4"><h3 class="text-lg font-bold"><i class="fas fa-prescription-bottle-alt mr-2"></i>FDA</h3><p class="text-indigo-100 text-sm">Food and Drug Administration</p></div>
+            <div class="p-4">
+                <ul class="text-gray-600 text-sm space-y-2">
+                    <li><i class="fas fa-check text-indigo-500 mr-2"></i>Clasificación de dispositivos (Clase I, II, III)</li>
+                    <li><i class="fas fa-check text-indigo-500 mr-2"></i>Aprobación: <span class="tooltip-term">510(k)<span class="tooltip-text">Notificación previa al mercado que demuestra que un dispositivo es sustancialmente equivalente a uno ya aprobado. Ruta más común para dispositivos Clase II.</span></span>, <span class="tooltip-term">PMA<span class="tooltip-text">Pre-Market Approval - proceso más riguroso de aprobación para dispositivos Clase III de alto riesgo. Requiere evidencia clínica de seguridad y eficacia.</span></span></li>
+                    <li><i class="fas fa-check text-indigo-500 mr-2"></i>Alertas y recalls de equipos</li>
+                    <li><i class="fas fa-check text-indigo-500 mr-2"></i>Inspección de fabricantes</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- Recalls reales -->
+    <div class="bg-gradient-to-r from-red-50 to-pink-50 rounded-xl p-5 border border-red-200 mb-6">
+        <h4 class="font-semibold text-gray-800 mb-3"><i class="fas fa-exclamation-triangle mr-2 text-red-500"></i>Recalls Reales FDA</h4>
+        <div class="space-y-3">
+            <div class="bg-white rounded-lg p-3 border border-red-100">
+                <p class="font-semibold text-red-700 text-sm"><i class="fas fa-lungs mr-1"></i>Philips Respironics (2021) - Clase I</p>
+                <p class="text-gray-600 text-xs mt-1">Recall masivo de máquinas CPAP/BiPAP por degradación de espuma que liberaba partículas tóxicas. Afectó ~5.5 millones de dispositivos mundialmente. El BMET debió identificar y retirar todos los equipos afectados del inventario hospitalario.</p>
+            </div>
+            <div class="bg-white rounded-lg p-3 border border-red-100">
+                <p class="font-semibold text-red-700 text-sm"><i class="fas fa-heartbeat mr-1"></i>Medtronic Desfibriladores (2023) - Clase I</p>
+                <p class="text-gray-600 text-xs mt-1">Recall de ciertos modelos de desfibriladores implantables por riesgo de falla en el circuito. El BMET coordinó con cardiología para identificar pacientes afectados.</p>
+            </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-3"><i class="fas fa-external-link-alt mr-1"></i>Base de datos MAUDE: <a href="https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm" target="_blank" class="text-indigo-600 underline">accessdata.fda.gov/MAUDE</a></p>
+    </div>
+    <!-- Escenario -->
+    <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-200 mb-4">
+        <h4 class="font-semibold text-gray-800 mb-2"><i class="fas fa-search mr-2 text-indigo-600"></i>Escenario: Recall en tu hospital</h4>
+        <p class="text-gray-700 text-sm">Recibes una alerta FDA sobre un recall Clase I para bombas de infusión modelo XYZ. Tu hospital tiene 45 unidades. ¿Qué pasos seguirías? Piensa en: identificación del inventario, comunicación con enfermería, retiro del servicio, documentación y reporte.</p>
+    </div>
+    <!-- Mini Quiz Step 12 -->
+    <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4" id="mini-quiz-12">
+        <h4 class="font-semibold text-indigo-800 mb-3"><i class="fas fa-question-circle mr-2"></i>Checkpoint</h4>
+        <p class="text-gray-700 text-sm mb-3">¿Qué tipo de aprobación FDA requiere un dispositivo Clase III de alto riesgo?</p>
+        <div class="space-y-2">
+            <button class="mini-quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" onclick="checkMiniQuiz(this,'mq12',false)">a) 510(k)</button>
+            <button class="mini-quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" onclick="checkMiniQuiz(this,'mq12',true)">b) PMA (Pre-Market Approval)</button>
+            <button class="mini-quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" onclick="checkMiniQuiz(this,'mq12',false)">c) No requiere aprobación</button>
+        </div>
+        <div id="mq12-feedback" class="hidden mt-2 p-2 rounded text-sm"></div>
+    </div>
+</div>
+
+<!-- ========== STEP 13: Pareo Drag & Drop ========== -->
+<div class="step-content" data-step="13">
+    <span class="inline-block px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-sm font-medium mb-4"><i class="fas fa-hand-pointer mr-1"></i>Actividad Interactiva</span>
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Pareo: Agencias y sus Funciones</h2>
+    <p class="text-gray-600 mb-4">Arrastra cada agencia a la descripción correcta de su función principal.</p>
+    <div id="dnd-score" class="hidden mb-4 p-3 rounded-xl text-center font-semibold"></div>
+    <!-- Drag items -->
+    <div id="drag-bank" class="flex flex-wrap gap-3 mb-6 p-4 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+        <div class="drag-item" draggable="true" data-agency="JCAHO"><i class="fas fa-hospital-alt text-red-500 mr-2"></i>JCAHO</div>
+        <div class="drag-item" draggable="true" data-agency="OSHA"><i class="fas fa-hard-hat text-amber-500 mr-2"></i>OSHA</div>
+        <div class="drag-item" draggable="true" data-agency="IEEE"><i class="fas fa-bolt text-blue-500 mr-2"></i>IEEE</div>
+        <div class="drag-item" draggable="true" data-agency="NIST"><i class="fas fa-ruler-combined text-teal-500 mr-2"></i>NIST</div>
+        <div class="drag-item" draggable="true" data-agency="AAMI"><i class="fas fa-medkit text-emerald-500 mr-2"></i>AAMI</div>
+        <div class="drag-item" draggable="true" data-agency="FDA"><i class="fas fa-prescription-bottle-alt text-indigo-500 mr-2"></i>FDA</div>
+    </div>
+    <!-- Drop zones -->
+    <div class="space-y-3" id="drop-zones">
+        <div class="flex items-center gap-3">
+            <div class="drop-zone flex-grow" data-answer="JCAHO"><p class="text-gray-500 text-sm">Acreditación de hospitales basada en estándares de calidad</p></div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="drop-zone flex-grow" data-answer="OSHA"><p class="text-gray-500 text-sm">Seguridad laboral: radiación, ergonomía, materiales peligrosos</p></div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="drop-zone flex-grow" data-answer="IEEE"><p class="text-gray-500 text-sm">Estándares de seguridad eléctrica para dispositivos</p></div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="drop-zone flex-grow" data-answer="NIST"><p class="text-gray-500 text-sm">Calibración, metrología y trazabilidad de mediciones</p></div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="drop-zone flex-grow" data-answer="AAMI"><p class="text-gray-500 text-sm">Protocolos de mantenimiento y certificación CBET</p></div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="drop-zone flex-grow" data-answer="FDA"><p class="text-gray-500 text-sm">Regulación de dispositivos médicos, recalls y aprobaciones</p></div>
+        </div>
+    </div>
+    <button onclick="resetDragDrop()" class="mt-4 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300"><i class="fas fa-redo mr-1"></i>Reiniciar</button>
+</div>
+
+<!-- ========== STEP 14: TAREA - Caso Real Agencias ========== -->
+<div class="step-content" data-step="14">
+    <span class="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium mb-4"><i class="fas fa-pencil-alt mr-1"></i>Tarea Escrita</span>
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Tarea: Caso Real - Agencias Reguladoras</h2>
+    <div id="task-section-M2_caso_real_agencias" class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-200">
+        <div class="flex items-center justify-between mb-4">
+            <h4 class="text-xl font-semibold text-purple-800"><i class="fas fa-pencil-alt mr-2"></i>Caso Real: Agencias</h4>
+            <div id="task-timer-M2_caso_real_agencias" class="task-timer-badge">
+                <i class="fas fa-clock text-gray-500"></i>
+                <span id="timer-minutes-M2_caso_real_agencias" class="font-mono font-bold text-gray-600">10</span>
+                <span class="text-gray-500">:</span>
+                <span id="timer-seconds-M2_caso_real_agencias" class="font-mono font-bold text-gray-600">00</span>
+            </div>
+        </div>
+        <div id="task-waiting-M2_caso_real_agencias" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <div class="flex items-center gap-3"><i class="fas fa-info-circle text-blue-500 text-xl"></i><div><p class="text-blue-800 font-medium">El cronometro iniciara cuando comiences a escribir</p><p class="text-blue-600 text-sm">Tienes 10 minutos para completar esta tarea.</p></div></div>
+        </div>
+        <div class="bg-white rounded-lg p-4 mb-4 border border-purple-100">
+            <p class="text-gray-700 mb-2"><strong>Instrucciones:</strong></p>
+            <p class="text-gray-600 text-sm">Imagina que eres el BMET principal de un hospital. Responde:</p>
+            <ul class="text-gray-600 text-sm mt-2 ml-4 list-disc">
+                <li>Recibes un recall FDA Clase I para 30 bombas de infusión. Describe los pasos que seguirías.</li>
+                <li>¿Qué agencia consultarías para verificar la calibración de los equipos de monitoreo? ¿Por qué?</li>
+                <li>¿Cómo te prepararías para una auditoría JCAHO del departamento biomédico?</li>
+            </ul>
+        </div>
+        <div id="task-input-container-M2_caso_real_agencias">
+            <textarea id="task-response-M2_caso_real_agencias" class="w-full h-48 p-4 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 resize-none" placeholder="Comienza a escribir tu respuesta aqui..."></textarea>
+            <div class="flex items-center justify-between mt-3">
+                <div id="task-error-M2_caso_real_agencias" class="hidden text-red-600 text-sm bg-red-50 px-4 py-2 rounded-lg"></div>
+                <span id="char-count-M2_caso_real_agencias" class="text-sm text-gray-500 ml-auto">0 caracteres</span>
+            </div>
+        </div>
+        <div id="task-completed-M2_caso_real_agencias" class="hidden">
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div class="flex items-center gap-3 mb-3"><div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center"><i class="fas fa-check text-white text-lg"></i></div><div><h5 class="font-semibold text-green-800">Tarea Completada</h5><p class="text-green-600 text-sm">Tu respuesta ha sido guardada exitosamente.</p></div></div>
+                <div class="bg-white rounded-lg p-3 border border-green-100 max-h-40 overflow-y-auto"><p class="text-xs text-gray-500 mb-1">Tu respuesta:</p><p id="saved-response-M2_caso_real_agencias" class="text-gray-700 text-sm whitespace-pre-wrap"></p></div>
+            </div>
+        </div>
+        <div id="task-timeout-M2_caso_real_agencias" class="hidden">
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <div class="flex items-center gap-3"><div class="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center"><i class="fas fa-clock text-white text-lg"></i></div><div><h5 class="font-semibold text-amber-800">Tiempo Completado</h5><p class="text-amber-600 text-sm">Los 10 minutos han terminado. Tu respuesta fue guardada automaticamente.</p></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== STEP 15: Resumen + Glosario ========== -->
+<div class="step-content" data-step="15">
+    <span class="inline-block px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-sm font-medium mb-4">Paso 15</span>
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Resumen: Agencias y su Impacto en el BMET</h2>
+    <div class="overflow-x-auto mb-6">
+        <table class="w-full text-sm border-collapse">
+            <thead><tr class="bg-gradient-to-r from-gray-800 to-gray-900 text-white"><th class="p-3 text-left rounded-tl-lg">Agencia</th><th class="p-3 text-left">Enfoque Principal</th><th class="p-3 text-left rounded-tr-lg">Impacto para el BMET</th></tr></thead>
+            <tbody>
+                <tr class="border-b bg-red-50"><td class="p-3 font-bold text-red-700"><i class="fas fa-hospital-alt mr-1"></i>JCAHO</td><td class="p-3">Acreditación hospitalaria</td><td class="p-3">Auditorías de PM, documentación</td></tr>
+                <tr class="border-b bg-amber-50"><td class="p-3 font-bold text-amber-700"><i class="fas fa-hard-hat mr-1"></i>OSHA</td><td class="p-3">Seguridad laboral</td><td class="p-3">Radiación, eléctrica, ergonomía</td></tr>
+                <tr class="border-b bg-blue-50"><td class="p-3 font-bold text-blue-700"><i class="fas fa-bolt mr-1"></i>IEEE</td><td class="p-3">Estándares tecnológicos</td><td class="p-3">Seguridad eléctrica dispositivos</td></tr>
+                <tr class="border-b bg-teal-50"><td class="p-3 font-bold text-teal-700"><i class="fas fa-ruler-combined mr-1"></i>NIST</td><td class="p-3">Metrología</td><td class="p-3">Calibración, trazabilidad</td></tr>
+                <tr class="border-b bg-emerald-50"><td class="p-3 font-bold text-emerald-700"><i class="fas fa-medkit mr-1"></i>AAMI</td><td class="p-3">Instrumentación médica</td><td class="p-3">Protocolos PM, CBET</td></tr>
+                <tr class="bg-indigo-50"><td class="p-3 font-bold text-indigo-700 rounded-bl-lg"><i class="fas fa-prescription-bottle-alt mr-1"></i>FDA</td><td class="p-3">Regulación dispositivos</td><td class="p-3 rounded-br-lg">Recalls, clasificación, 510(k)</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl p-6 mb-6">
+        <h4 class="text-lg font-bold mb-4 text-center"><i class="fas fa-project-diagram mr-2"></i>¿Cómo se conecta todo?</h4>
+        <div class="grid md:grid-cols-3 gap-4 text-center text-sm">
+            <div class="bg-white/10 rounded-lg p-4"><i class="fas fa-hospital text-blue-400 text-2xl mb-2"></i><p class="font-bold">El Hospital</p><p class="text-xs opacity-80 mt-1">Acreditado por JCAHO, cumple OSHA</p></div>
+            <div class="bg-white/10 rounded-lg p-4"><i class="fas fa-microchip text-amber-400 text-2xl mb-2"></i><p class="font-bold">Los Equipos</p><p class="text-xs opacity-80 mt-1">FDA, IEEE, calibrados según NIST</p></div>
+            <div class="bg-white/10 rounded-lg p-4"><i class="fas fa-user-cog text-emerald-400 text-2xl mb-2"></i><p class="font-bold">El BMET</p><p class="text-xs opacity-80 mt-1">Protocolos AAMI, certificación CBET</p></div>
+        </div>
+    </div>
+    <div class="text-center"><button onclick="toggleGlossary()" class="px-6 py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition"><i class="fas fa-book mr-2"></i>Abrir Glosario Completo</button></div>
+</div>
+
+<!-- ========== STEP 16: Autoevaluación Expandida ========== -->
+<div class="step-content" data-step="16">
+    <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80" alt="Evaluación" class="step-image">
+    <span class="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-4">Paso 16 - Final</span>
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Autoevaluación del Módulo</h2>
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+        <p class="text-amber-800 text-sm"><i class="fas fa-info-circle mr-2"></i>Completa todas las preguntas. Esta es práctica — tu prueba será presencial.</p>
+    </div>
+    <div id="quiz-container" class="space-y-4">
+        <!-- MC Questions 1-8 -->
+        <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border" data-question="1">
+            <p class="font-semibold text-gray-800 mb-3"><span class="text-emerald-600">1.</span> ¿Cuál NO es un área de empleo para el BMET?</p>
+            <div class="space-y-2"><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">a) Instalaciones médico-hospitalarias</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">b) Compañías de servicio</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" data-correct="true">c) Firma de abogados</button></div>
+            <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+        </div>
+        <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border" data-question="2">
+            <p class="font-semibold text-gray-800 mb-3"><span class="text-emerald-600">2.</span> ¿Quién está en el nivel más alto de la jerarquía hospitalaria?</p>
+            <div class="space-y-2"><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" data-correct="true">a) La Junta de Directores</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">b) El Director General (CEO)</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">c) El Director Médico</button></div>
+            <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+        </div>
+        <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border" data-question="3">
+            <p class="font-semibold text-gray-800 mb-3"><span class="text-emerald-600">3.</span> ¿Qué agencia acredita hospitales?</p>
+            <div class="space-y-2"><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">a) OSHA</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" data-correct="true">b) JCAHO</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">c) IEEE</button></div>
+            <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+        </div>
+        <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border" data-question="4">
+            <p class="font-semibold text-gray-800 mb-3"><span class="text-emerald-600">4.</span> ¿Qué agencia regula la seguridad laboral?</p>
+            <div class="space-y-2"><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" data-correct="true">a) OSHA</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">b) NIST</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">c) AAMI</button></div>
+            <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+        </div>
+        <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border" data-question="5">
+            <p class="font-semibold text-gray-800 mb-3"><span class="text-emerald-600">5.</span> ¿Qué agencia regula dispositivos médicos (recalls)?</p>
+            <div class="space-y-2"><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">a) AAMI</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">b) IEEE</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" data-correct="true">c) FDA</button></div>
+            <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+        </div>
+        <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border" data-question="6">
+            <p class="font-semibold text-gray-800 mb-3"><span class="text-emerald-600">6.</span> ¿Qué organización provee guías de calibración?</p>
+            <div class="space-y-2"><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" data-correct="true">a) NIST</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">b) JCAHO</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">c) OSHA</button></div>
+            <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+        </div>
+        <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border" data-question="7">
+            <p class="font-semibold text-gray-800 mb-3"><span class="text-emerald-600">7.</span> ¿Qué certificación administra AAMI para técnicos biomédicos?</p>
+            <div class="space-y-2"><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">a) CET</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" data-correct="true">b) CBET</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">c) CBT</button></div>
+            <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+        </div>
+        <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border" data-question="8">
+            <p class="font-semibold text-gray-800 mb-3"><span class="text-emerald-600">8.</span> ¿A quién reporta típicamente el Depto. Biomédico?</p>
+            <div class="space-y-2"><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">a) Departamento de Enfermería</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">b) Departamento de Finanzas</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" data-correct="true">c) VP de Servicios de Apoyo u Operaciones</button></div>
+            <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+        </div>
+        <!-- True/False 9-10 -->
+        <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border border-blue-200" data-question="9">
+            <p class="font-semibold text-gray-800 mb-1"><span class="text-blue-600">9. Verdadero o Falso:</span></p>
+            <p class="text-gray-700 mb-3 text-sm">Un dispositivo médico Clase I (bajo riesgo) como un estetoscopio generalmente está exento de la aprobación 510(k).</p>
+            <div class="space-y-2"><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" data-correct="true">Verdadero</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">Falso</button></div>
+            <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+        </div>
+        <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border border-blue-200" data-question="10">
+            <p class="font-semibold text-gray-800 mb-1"><span class="text-blue-600">10. Verdadero o Falso:</span></p>
+            <p class="text-gray-700 mb-3 text-sm">OSHA puede multar a un hospital si un BMET no tiene equipo de protección personal adecuado al trabajar con equipos de radiación.</p>
+            <div class="space-y-2"><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" data-correct="true">Verdadero</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">Falso</button></div>
+            <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+        </div>
+        <!-- Fill in blank 11-12 -->
+        <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border border-purple-200" data-question="11" data-type="fill">
+            <p class="font-semibold text-gray-800 mb-3"><span class="text-purple-600">11. Completar:</span> La certificación profesional _______ es administrada por AAMI y valida competencia en mantenimiento de equipos biomédicos.</p>
+            <div class="flex gap-2"><input type="text" id="fill-11" class="flex-grow px-3 py-2 border-2 border-purple-200 rounded-lg text-sm focus:border-purple-500" placeholder="Escribe la respuesta..."><button onclick="checkFillBlank(11,'CBET')" class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700">Verificar</button></div>
+            <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+        </div>
+        <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border border-purple-200" data-question="12" data-type="fill">
+            <p class="font-semibold text-gray-800 mb-3"><span class="text-purple-600">12. Completar:</span> El proceso de aprobación FDA más riguroso para dispositivos Clase III se llama _______ (siglas en inglés).</p>
+            <div class="flex gap-2"><input type="text" id="fill-12" class="flex-grow px-3 py-2 border-2 border-purple-200 rounded-lg text-sm focus:border-purple-500" placeholder="Escribe la respuesta..."><button onclick="checkFillBlank(12,'PMA')" class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700">Verificar</button></div>
+            <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+        </div>
+        <!-- Scenario 13-14 -->
+        <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border border-orange-200" data-question="13">
+            <p class="font-semibold text-gray-800 mb-1"><span class="text-orange-600">13. Escenario:</span></p>
+            <p class="text-gray-700 mb-3 text-sm">Un BMET descubre que el 30% de los desfibriladores no tienen documentación de mantenimiento preventivo actualizada. Una inspección JCAHO está programada para la próxima semana. ¿Cuál es la prioridad inmediata?</p>
+            <div class="space-y-2"><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" data-correct="true">a) Realizar y documentar el PM de todos los desfibriladores pendientes inmediatamente</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">b) Comprar desfibriladores nuevos</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">c) Posponer la inspección JCAHO</button></div>
+            <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+        </div>
+        <div class="quiz-question bg-white rounded-xl p-4 shadow-sm border border-orange-200" data-question="14">
+            <p class="font-semibold text-gray-800 mb-1"><span class="text-orange-600">14. Escenario:</span></p>
+            <p class="text-gray-700 mb-3 text-sm">Un monitor de signos vitales muestra lecturas inconsistentes de presión arterial. Has verificado que el equipo auxiliar funciona correctamente. ¿Qué agencia provee los estándares de calibración que debes seguir?</p>
+            <div class="space-y-2"><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">a) OSHA</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm">b) JCAHO</button><button class="quiz-option w-full text-left p-2 rounded border border-gray-200 text-sm" data-correct="true">c) NIST</button></div>
+            <div class="quiz-feedback hidden mt-2 p-2 rounded text-sm"></div>
+        </div>
+    </div>
+    <div id="quiz-results" class="hidden mt-6 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl p-6">
+        <h4 class="text-lg font-semibold mb-2"><i class="fas fa-trophy mr-2"></i>Resultados</h4>
+        <p id="quiz-score" class="text-xl"></p>
+        <div id="quiz-review" class="mt-3 text-sm"></div>
+    </div>
+    <div class="mt-6 bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+        <div class="text-green-600 text-4xl mb-2"><i class="fas fa-check-circle"></i></div>
+        <h4 class="text-lg font-semibold text-green-800">Has completado el Módulo 2!</h4>
+        <p class="text-green-700 text-sm">Ahora conoces las estructuras administrativas hospitalarias y las agencias reguladoras clave para el BMET.</p>
+    </div>
+</div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="flex justify-between mt-8 pt-6 border-t">
+                        <button id="prev-btn" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50" disabled><i class="fas fa-arrow-left mr-2"></i>Anterior</button>
+                        <span id="step-indicator" class="self-center text-gray-500 text-sm">Paso 1 de 16</span>
+                        <button id="next-btn" class="px-6 py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700">Siguiente<i class="fas fa-arrow-right ml-2"></i></button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <script>
+    // ==========================================
+    // CONFIG
+    // ==========================================
+    var CONFIG = {
+        GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxH8dRWkxuHBkyZJXAU7fd-Wh9NgRTXceZYpJl083lbdPNWlZ6HzsfNTfavm0HRYbVwjw/exec',
+        MODULE_ID: 'TEBI1105_M2',
+        TOTAL_STEPS: 16,
+        STEP_NAMES: [
+            'Introducción', 'Empleabilidad', 'Video Carrera', 'Tarea: Reflexión',
+            'Organigrama Hospital', 'Depto. Biomédico', 'Video Estructura', 'Tarea: Análisis',
+            'Agencias Intro', 'JCAHO y OSHA', 'IEEE y NIST', 'AAMI y FDA',
+            'Pareo Agencias', 'Tarea: Caso Real', 'Resumen', 'Autoevaluación'
+        ],
+        STEP_TIMES: { 1:120, 2:180, 3:180, 4:600, 5:180, 6:180, 7:420, 8:600, 9:180, 10:180, 11:120, 12:240, 13:120, 14:600, 15:120, 16:600 },
+        TASKS: {
+            M2_reflexion_empleabilidad: { step: 4, time: 600, label: 'Reflexión Empleabilidad' },
+            M2_analisis_organizacional: { step: 8, time: 600, label: 'Análisis Organizacional' },
+            M2_caso_real_agencias: { step: 14, time: 600, label: 'Caso Real Agencias' }
+        },
+        OLD_TO_NEW_STEP: { 1:1, 2:2, 3:3, 4:5, 5:6, 6:7, 7:9, 8:10, 9:11, 10:12, 11:15, 12:16 },
+        GLOSSARY: [
+            { term: 'BMET', def: 'Biomedical Equipment Technician - Técnico de Equipos Biomédicos' },
+            { term: 'JCAHO', def: 'Joint Commission on Accreditation of Healthcare Organizations - acredita hospitales' },
+            { term: 'OSHA', def: 'Occupational Safety and Health Administration - seguridad laboral' },
+            { term: 'IEEE', def: 'Institute for Electrical and Electronic Engineers - estándares eléctricos' },
+            { term: 'NIST', def: 'National Institute of Standards and Technology - metrología y calibración' },
+            { term: 'AAMI', def: 'Association for the Advancement of Medical Instrumentation - protocolos y certificaciones' },
+            { term: 'FDA', def: 'Food and Drug Administration - regulación de dispositivos médicos' },
+            { term: 'CBET', def: 'Certified Biomedical Equipment Technician - certificación profesional de AAMI' },
+            { term: '510(k)', def: 'Notificación previa al mercado FDA para dispositivos sustancialmente equivalentes a uno aprobado' },
+            { term: 'PMA', def: 'Pre-Market Approval - aprobación más rigurosa para dispositivos Clase III' },
+            { term: 'Trazabilidad', def: 'Cadena ininterrumpida de calibraciones que conecta una medición con estándares nacionales' },
+            { term: 'HAZMAT', def: 'Hazardous Materials - sustancias peligrosas reguladas por OSHA' },
+            { term: 'Recall', def: 'Retiro del mercado de un dispositivo por riesgo de seguridad, ordenado o voluntario vía FDA' },
+            { term: 'Mantenimiento Preventivo', def: 'Inspecciones y servicios programados para prevenir fallas antes de que ocurran' }
+        ],
+        BADGES: [
+            { id: 'first_step', icon: 'fas fa-shoe-prints', label: 'Primer Paso', desc: 'Completa el paso 1', color: 'bg-blue-500' },
+            { id: 'empleabilidad', icon: 'fas fa-briefcase', label: 'Empleabilidad', desc: 'Completa pasos 1-4', color: 'bg-emerald-500' },
+            { id: 'estructura', icon: 'fas fa-sitemap', label: 'Organizador', desc: 'Completa pasos 5-8', color: 'bg-amber-500' },
+            { id: 'regulador', icon: 'fas fa-shield-alt', label: 'Regulador', desc: 'Completa pasos 9-14', color: 'bg-purple-500' },
+            { id: 'escritor', icon: 'fas fa-pencil-alt', label: 'Escritor', desc: 'Completa las 3 tareas', color: 'bg-green-500' },
+            { id: 'quiz_perfect', icon: 'fas fa-star', label: 'Perfecto', desc: '100% en autoevaluación', color: 'bg-yellow-500' },
+            { id: 'modulo_completo', icon: 'fas fa-trophy', label: 'Módulo Completo', desc: 'Completa los 16 pasos', color: 'bg-red-500' }
+        ]
+    };
+
+    // ==========================================
+    // STATE
+    // ==========================================
+    var state = {
+        currentStep: 1,
+        completedSteps: new Set(),
+        completedTimes: new Set(),
+        quizAnswers: {},
+        isOnlineMode: false,
+        currentStudentName: '',
+        timerInterval: null,
+        remainingTime: 0,
+        timerCompleted: false,
+        tasks: {},
+        miniQuizAnswers: {},
+        miniQuizStreak: 0,
+        achievements: new Set(),
+        notes: {},
+        dndCompleted: false
+    };
+
+    // ==========================================
+    // TIMER (disabled)
+    // ==========================================
+    function startTimer(step) {
+        state.timerCompleted = true;
+        state.remainingTime = 0;
+        updateNavigationButtons();
+    }
+    function updateTimerDisplay() {
+        var display = document.getElementById('timer-display');
+        if (state.timerCompleted || state.completedTimes.has(state.currentStep)) {
+            display.textContent = '\u2713 Completado';
+            display.className = 'timer-display timer-complete';
+        } else {
+            var m = Math.floor(state.remainingTime / 60), s = state.remainingTime % 60;
+            display.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+            display.className = 'timer-display' + (state.remainingTime <= 30 ? ' timer-danger' : state.remainingTime <= 60 ? ' timer-warning' : '');
+        }
+    }
+    function showTimerCompleteMessage() { document.getElementById('timer-container').classList.add('timer-done'); }
+    function hideTimerCompleteMessage() { document.getElementById('timer-container').classList.remove('timer-done'); }
+    function onTimerComplete() {
+        state.timerCompleted = true;
+        state.completedTimes.add(state.currentStep);
+        state.completedSteps.add(state.currentStep);
+        updateTimerDisplay(); updateNavigationButtons(); updateProgress(); saveProgress();
+        showTimerCompleteMessage();
+        showNotification('Tiempo completado! Puedes continuar.');
+    }
+    function showNotification(message) {
+        var n = document.createElement('div');
+        n.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white px-6 py-3 rounded-lg shadow-lg z-[1100] animate-bounce';
+        n.innerHTML = '<i class="fas fa-check-circle mr-2"></i>' + message;
+        document.body.appendChild(n);
+        setTimeout(function() { n.remove(); }, 3000);
+    }
+
+    // ==========================================
+    // TASK SYSTEM
+    // ==========================================
+    function initTaskSystem() {
+        Object.keys(CONFIG.TASKS).forEach(function(taskId) {
+            var textarea = document.getElementById('task-response-' + taskId);
+            if (!textarea) return;
+            // Load saved task
+            var saved = loadTaskFromStorage(taskId);
+            if (saved) {
+                showTaskCompleted(taskId, saved);
+                return;
+            }
+            // Paste blocking
+            textarea.addEventListener('paste', function(e) { e.preventDefault(); showTaskError(taskId, 'No se permite pegar texto. Escribe tu respuesta.'); });
+            textarea.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'v') { e.preventDefault(); showTaskError(taskId, 'No se permite pegar texto.'); }
+            });
+            textarea.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+            // First keystroke trigger
+            var started = false;
+            textarea.addEventListener('input', function() {
+                updateTaskCharCount(taskId);
+                if (!started && textarea.value.trim().length > 0) {
+                    started = true;
+                    startTaskTimer(taskId);
+                }
+            });
+        });
+    }
+
+    function showTaskError(taskId, msg) {
+        var el = document.getElementById('task-error-' + taskId);
+        if (el) { el.textContent = msg; el.classList.remove('hidden'); setTimeout(function() { el.classList.add('hidden'); }, 3000); }
+    }
+
+    function startTaskTimer(taskId) {
+        var cfg = CONFIG.TASKS[taskId];
+        if (!cfg) return;
+        var remaining = cfg.time;
+        var waitEl = document.getElementById('task-waiting-' + taskId);
+        var timerBadge = document.getElementById('task-timer-' + taskId);
+        var minEl = document.getElementById('timer-minutes-' + taskId);
+        var secEl = document.getElementById('timer-seconds-' + taskId);
+        if (waitEl) waitEl.classList.add('hidden');
+        if (timerBadge) timerBadge.classList.add('running');
+        state.tasks[taskId] = { interval: null, remaining: remaining };
+        state.tasks[taskId].interval = setInterval(function() {
+            remaining--;
+            state.tasks[taskId].remaining = remaining;
+            if (minEl) minEl.textContent = String(Math.floor(remaining / 60)).padStart(2, '0');
+            if (secEl) secEl.textContent = String(remaining % 60).padStart(2, '0');
+            if (remaining <= 0) {
+                clearInterval(state.tasks[taskId].interval);
+                onTaskTimerComplete(taskId);
+            }
+        }, 1000);
+    }
+
+    function onTaskTimerComplete(taskId) {
+        var textarea = document.getElementById('task-response-' + taskId);
+        var response = textarea ? textarea.value.trim() : '';
+        var timerBadge = document.getElementById('task-timer-' + taskId);
+        if (timerBadge) { timerBadge.classList.remove('running'); timerBadge.classList.add('done'); }
+        if (response.length > 0) {
+            saveTaskToStorage(taskId, response);
+            saveTaskToCloud(taskId, response);
+            showTaskCompleted(taskId, response);
+        } else {
+            document.getElementById('task-input-container-' + taskId).classList.add('hidden');
+            document.getElementById('task-timeout-' + taskId).classList.remove('hidden');
+            saveTaskToStorage(taskId, '(tiempo agotado sin respuesta)');
+        }
+        checkBadges();
+    }
+
+    function showTaskCompleted(taskId, response) {
+        var inputContainer = document.getElementById('task-input-container-' + taskId);
+        var waitEl = document.getElementById('task-waiting-' + taskId);
+        var completedEl = document.getElementById('task-completed-' + taskId);
+        var savedEl = document.getElementById('saved-response-' + taskId);
+        if (inputContainer) inputContainer.classList.add('hidden');
+        if (waitEl) waitEl.classList.add('hidden');
+        if (completedEl) completedEl.classList.remove('hidden');
+        if (savedEl) savedEl.textContent = response;
+        var timerBadge = document.getElementById('task-timer-' + taskId);
+        if (timerBadge) { timerBadge.classList.remove('running'); timerBadge.classList.add('done');
+            var minEl = document.getElementById('timer-minutes-' + taskId);
+            var secEl = document.getElementById('timer-seconds-' + taskId);
+            if (minEl) minEl.textContent = '\u2713';
+            if (secEl) secEl.textContent = '';
+        }
+        if (state.tasks[taskId] && state.tasks[taskId].interval) clearInterval(state.tasks[taskId].interval);
+    }
+
+    function updateTaskCharCount(taskId) {
+        var textarea = document.getElementById('task-response-' + taskId);
+        var counter = document.getElementById('char-count-' + taskId);
+        if (textarea && counter) counter.textContent = textarea.value.length + ' caracteres';
+    }
+
+    function saveTaskToStorage(taskId, response) {
+        var studentId = localStorage.getItem('tebi1105_studentId');
+        if (!studentId) return;
+        var key = 'tebi1105_m2_task_' + studentId + '_' + taskId;
+        localStorage.setItem(key, response);
+    }
+
+    function loadTaskFromStorage(taskId) {
+        var studentId = localStorage.getItem('tebi1105_studentId');
+        if (!studentId) return null;
+        return localStorage.getItem('tebi1105_m2_task_' + studentId + '_' + taskId);
+    }
+
+    async function saveTaskToCloud(taskId, response) {
+        if (!state.isOnlineMode) return;
+        var studentId = localStorage.getItem('tebi1105_studentId');
+        if (!studentId) return;
+        try {
+            await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
+                method: 'POST', mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'saveTaskResponse', studentId: studentId, moduleId: CONFIG.MODULE_ID, taskId: taskId, response: response, timestamp: new Date().toISOString() })
+            });
+        } catch (e) { console.log('Error saving task:', e); }
+    }
+
+    // ==========================================
+    // MINI QUIZ
+    // ==========================================
+    function checkMiniQuiz(btn, mqId, isCorrect) {
+        if (state.miniQuizAnswers[mqId]) return;
+        state.miniQuizAnswers[mqId] = true;
+        var parent = btn.parentElement;
+        parent.querySelectorAll('.mini-quiz-option').forEach(function(o) { o.classList.add('mq-answered'); o.style.pointerEvents = 'none'; });
+        btn.classList.add(isCorrect ? 'mq-correct' : 'mq-incorrect');
+        if (!isCorrect) parent.querySelectorAll('.mini-quiz-option').forEach(function(o) { if (o !== btn) o.classList.add('mq-correct'); });
+        var fb = document.getElementById(mqId + '-feedback');
+        if (fb) {
+            fb.classList.remove('hidden');
+            fb.className = 'mt-2 p-2 rounded text-sm ' + (isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
+            fb.innerHTML = isCorrect ? '<i class="fas fa-check-circle mr-1"></i>Correcto!' : '<i class="fas fa-times-circle mr-1"></i>Incorrecto';
+        }
+        if (isCorrect) {
+            state.miniQuizStreak++;
+            if (state.miniQuizStreak >= 3) showNotification(state.miniQuizStreak + ' correctas seguidas!');
+        } else { state.miniQuizStreak = 0; }
+    }
+
+    // ==========================================
+    // DRAG AND DROP
+    // ==========================================
+    function shuffleChildren(parent) {
+        var children = Array.from(parent.children);
+        for (var i = children.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            parent.appendChild(children[j]);
+            children.splice(j, 1, children[i]);
+        }
+    }
+
+    function initDragDrop() {
+        // Shuffle drag items and drop zones so order is random each time
+        var dragBank = document.getElementById('drag-bank');
+        var dropContainer = document.getElementById('drop-zones');
+        if (dragBank) shuffleChildren(dragBank);
+        if (dropContainer) shuffleChildren(dropContainer);
+
+        var dragItems = document.querySelectorAll('.drag-item');
+        var dropZones = document.querySelectorAll('.drop-zone');
+        var matched = 0, total = dropZones.length;
+
+        dragItems.forEach(function(item) {
+            item.addEventListener('dragstart', function(e) { e.dataTransfer.setData('text/plain', item.dataset.agency); item.classList.add('dragging'); });
+            item.addEventListener('dragend', function() { item.classList.remove('dragging'); });
+            // Touch support
+            var touchClone = null;
+            item.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                touchClone = item.cloneNode(true);
+                touchClone.style.position = 'fixed';
+                touchClone.style.zIndex = '9999';
+                touchClone.style.opacity = '0.8';
+                touchClone.style.pointerEvents = 'none';
+                document.body.appendChild(touchClone);
+                item.classList.add('dragging');
+            }, { passive: false });
+            item.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+                if (touchClone) {
+                    var t = e.touches[0];
+                    touchClone.style.left = (t.clientX - 40) + 'px';
+                    touchClone.style.top = (t.clientY - 20) + 'px';
+                }
+            }, { passive: false });
+            item.addEventListener('touchend', function(e) {
+                if (touchClone) { touchClone.remove(); touchClone = null; }
+                item.classList.remove('dragging');
+                var t = e.changedTouches[0];
+                var el = document.elementFromPoint(t.clientX, t.clientY);
+                var zone = el ? el.closest('.drop-zone') : null;
+                if (zone && !zone.classList.contains('correct')) {
+                    handleDrop(zone, item.dataset.agency, item);
+                }
+            });
+        });
+
+        dropZones.forEach(function(zone) {
+            zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('drag-over'); });
+            zone.addEventListener('dragleave', function() { zone.classList.remove('drag-over'); });
+            zone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                var agency = e.dataTransfer.getData('text/plain');
+                var dragItem = document.querySelector('.drag-item[data-agency="' + agency + '"]');
+                handleDrop(zone, agency, dragItem);
+            });
+        });
+
+        function handleDrop(zone, agency, dragItem) {
+            if (zone.classList.contains('correct')) return;
+            var correct = zone.dataset.answer === agency;
+            if (correct) {
+                zone.classList.add('correct');
+                zone.innerHTML = '<div class="flex items-center gap-2"><i class="fas fa-check-circle text-green-600"></i><span class="font-semibold text-green-800">' + agency + '</span><span class="text-gray-500 text-xs">- ' + zone.querySelector('p').textContent + '</span></div>';
+                if (dragItem) dragItem.style.display = 'none';
+                matched++;
+                if (matched === total) {
+                    state.dndCompleted = true;
+                    var scoreEl = document.getElementById('dnd-score');
+                    scoreEl.className = 'mb-4 p-3 rounded-xl text-center font-semibold bg-green-100 text-green-800';
+                    scoreEl.innerHTML = '<i class="fas fa-trophy mr-2"></i>Excelente! Completaste el pareo correctamente.';
+                    scoreEl.classList.remove('hidden');
+                    saveProgress();
+                }
+            } else {
+                zone.classList.add('incorrect');
+                setTimeout(function() { zone.classList.remove('incorrect'); }, 800);
+            }
+        }
+    }
+
+    function resetDragDrop() {
+        document.querySelectorAll('.drag-item').forEach(function(i) { i.style.display = ''; i.classList.remove('dragging'); });
+        document.querySelectorAll('.drop-zone').forEach(function(z) {
+            z.classList.remove('correct', 'incorrect', 'drag-over');
+            var answer = z.dataset.answer;
+            var descriptions = { JCAHO: 'Acreditación de hospitales basada en estándares de calidad', OSHA: 'Seguridad laboral: radiación, ergonomía, materiales peligrosos', IEEE: 'Estándares de seguridad eléctrica para dispositivos', NIST: 'Calibración, metrología y trazabilidad de mediciones', AAMI: 'Protocolos de mantenimiento y certificación CBET', FDA: 'Regulación de dispositivos médicos, recalls y aprobaciones' };
+            z.innerHTML = '<p class="text-gray-500 text-sm">' + (descriptions[answer] || '') + '</p>';
+        });
+        document.getElementById('dnd-score').classList.add('hidden');
+        state.dndCompleted = false;
+        initDragDrop();
+    }
+
+    // ==========================================
+    // ACCORDION
+    // ==========================================
+    function toggleAccordion(header) {
+        var body = header.nextElementSibling;
+        var isOpen = body.classList.contains('open');
+        header.classList.toggle('active', !isOpen);
+        body.classList.toggle('open', !isOpen);
+    }
+
+    // ==========================================
+    // NOTES
+    // ==========================================
+    function toggleNotes() {
+        document.getElementById('notes-panel').classList.toggle('open');
+        loadStudentNote();
+    }
+    function loadStudentNote() {
+        var studentId = localStorage.getItem('tebi1105_studentId');
+        if (!studentId) return;
+        document.getElementById('notes-step-label').textContent = state.currentStep;
+        var note = localStorage.getItem('tebi1105_m2_note_' + studentId + '_step' + state.currentStep) || '';
+        document.getElementById('student-notes').value = note;
+    }
+    function saveStudentNote() {
+        var studentId = localStorage.getItem('tebi1105_studentId');
+        if (!studentId) return;
+        localStorage.setItem('tebi1105_m2_note_' + studentId + '_step' + state.currentStep, document.getElementById('student-notes').value);
+    }
+
+    // ==========================================
+    // GLOSSARY
+    // ==========================================
+    function toggleGlossary() {
+        var modal = document.getElementById('glossary-modal');
+        modal.classList.toggle('active');
+        if (modal.classList.contains('active')) renderGlossary();
+    }
+    function renderGlossary(filter) {
+        var list = document.getElementById('glossary-list');
+        var terms = CONFIG.GLOSSARY.filter(function(g) {
+            if (!filter) return true;
+            return g.term.toLowerCase().includes(filter.toLowerCase()) || g.def.toLowerCase().includes(filter.toLowerCase());
+        });
+        list.innerHTML = terms.map(function(g) {
+            return '<div class="bg-gray-50 rounded-lg p-3 border"><p class="font-bold text-emerald-700 text-sm">' + g.term + '</p><p class="text-gray-600 text-xs mt-1">' + g.def + '</p></div>';
+        }).join('');
+    }
+    function filterGlossary() { renderGlossary(document.getElementById('glossary-search').value); }
+
+    // ==========================================
+    // BADGES
+    // ==========================================
+    function checkBadges() {
+        var prev = state.achievements.size;
+        if (state.completedSteps.has(1)) state.achievements.add('first_step');
+        if ([1,2,3,4].every(function(s) { return state.completedSteps.has(s); })) state.achievements.add('empleabilidad');
+        if ([5,6,7,8].every(function(s) { return state.completedSteps.has(s); })) state.achievements.add('estructura');
+        if ([9,10,11,12,13,14].every(function(s) { return state.completedSteps.has(s); })) state.achievements.add('regulador');
+        var allTasks = Object.keys(CONFIG.TASKS).every(function(t) { return loadTaskFromStorage(t); });
+        if (allTasks) state.achievements.add('escritor');
+        if (state.completedSteps.size >= 16) state.achievements.add('modulo_completo');
+        if (prev < state.achievements.size) {
+            showNotification('Nuevo logro desbloqueado!');
+            saveBadges();
+        }
+    }
+    function showBadges() {
+        var grid = document.getElementById('badges-grid');
+        grid.innerHTML = CONFIG.BADGES.map(function(b) {
+            var unlocked = state.achievements.has(b.id);
+            return '<div class="text-center"><div class="badge-item ' + (unlocked ? b.color + ' text-white unlocked' : 'locked') + ' mx-auto mb-2"><i class="' + b.icon + '"></i></div><p class="text-xs font-semibold text-gray-700">' + b.label + '</p><p class="text-xs text-gray-500">' + b.desc + '</p></div>';
+        }).join('');
+        document.getElementById('badges-modal').classList.add('active');
+    }
+    function saveBadges() {
+        var studentId = localStorage.getItem('tebi1105_studentId');
+        if (studentId) localStorage.setItem('tebi1105_m2_badges_' + studentId, JSON.stringify(Array.from(state.achievements)));
+    }
+    function loadBadges() {
+        var studentId = localStorage.getItem('tebi1105_studentId');
+        if (!studentId) return;
+        var saved = localStorage.getItem('tebi1105_m2_badges_' + studentId);
+        if (saved) state.achievements = new Set(JSON.parse(saved));
+    }
+
+    // ==========================================
+    // AUTH
+    // ==========================================
+    async function verifyStudentOnline(studentId) {
+        try {
+            var response = await fetch(CONFIG.GOOGLE_SCRIPT_URL + '?action=verify&studentId=' + encodeURIComponent(studentId));
+            var result = await response.json();
+            if (result.success) {
+                state.isOnlineMode = true;
+                state.currentStudentName = result.name || studentId;
+                localStorage.setItem('tebi1105_studentId', studentId);
+                document.getElementById('login-modal').classList.add('modal-hidden');
+                document.getElementById('user-info').classList.remove('hidden');
+                document.getElementById('user-name').textContent = state.currentStudentName;
+                await loadProgressOnline(studentId);
+                initTaskSystem();
+                loadBadges();
+                checkBadges();
+                startTimer(state.currentStep);
+            } else {
+                alert('Estudiante no encontrado en el sistema. Verifica tu ID.');
+                localStorage.removeItem('tebi1105_studentId');
+            }
+        } catch (error) {
+            console.log('Modo offline:', error);
+            state.isOnlineMode = false;
+            document.getElementById('login-modal').classList.add('modal-hidden');
+            document.getElementById('user-info').classList.remove('hidden');
+            document.getElementById('user-name').textContent = studentId + ' (offline)';
+            loadProgress(studentId);
+            initTaskSystem();
+            loadBadges();
+            checkBadges();
+            startTimer(state.currentStep);
+        }
+    }
+
+    // ==========================================
+    // PROGRESS
+    // ==========================================
+    function migrateOldProgress(data) {
+        if (!data || data.totalStepsWas === 16) return data;
+        if (data.completedSteps && data.completedSteps.length > 0) {
+            var maxOld = Math.max.apply(null, data.completedSteps);
+            if (maxOld <= 12) {
+                data.completedSteps = data.completedSteps.map(function(s) { return CONFIG.OLD_TO_NEW_STEP[s] || s; });
+                data.completedTimes = (data.completedTimes || []).map(function(s) { return CONFIG.OLD_TO_NEW_STEP[s] || s; });
+                var newCurrent = CONFIG.OLD_TO_NEW_STEP[data.currentStep] || data.currentStep;
+                data.currentStep = Math.min(newCurrent, 16);
+            }
+        }
+        data.totalStepsWas = 16;
+        return data;
+    }
+
+    async function loadProgressOnline(studentId) {
+        try {
+            var response = await fetch(CONFIG.GOOGLE_SCRIPT_URL + '?action=getProgress&studentId=' + encodeURIComponent(studentId) + '&moduleId=' + CONFIG.MODULE_ID);
+            var result = await response.json();
+            if (result.success && result.progress) {
+                var data = migrateOldProgress(result.progress);
+                state.completedSteps = new Set(data.completedSteps || []);
+                state.completedTimes = new Set(data.completedTimes || []);
+                state.currentStep = data.currentStep || 1;
+            } else { loadProgress(studentId); }
+        } catch (error) { loadProgress(studentId); }
+        goToStep(state.currentStep);
+        updateProgress();
+    }
+
+    function loadProgress(studentId) {
+        var saved = localStorage.getItem('tebi1105_m2_' + studentId);
+        if (saved) {
+            var data = migrateOldProgress(JSON.parse(saved));
+            state.completedSteps = new Set(data.completedSteps || []);
+            state.completedTimes = new Set(data.completedTimes || []);
+            state.currentStep = data.currentStep || 1;
+            state.quizAnswers = data.quizAnswers || {};
+        }
+        goToStep(state.currentStep);
+        updateProgress();
+    }
+
+    function saveProgress() {
+        var studentId = localStorage.getItem('tebi1105_studentId');
+        if (studentId) {
+            localStorage.setItem('tebi1105_m2_' + studentId, JSON.stringify({
+                completedSteps: Array.from(state.completedSteps),
+                completedTimes: Array.from(state.completedTimes),
+                currentStep: state.currentStep,
+                quizAnswers: state.quizAnswers,
+                totalStepsWas: 16
+            }));
+            saveProgressOnline();
+        }
+    }
+
+    async function saveProgressOnline() {
+        if (!state.isOnlineMode) return;
+        var studentId = localStorage.getItem('tebi1105_studentId');
+        if (!studentId) return;
+        try {
+            await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
+                method: 'POST', mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'saveProgress', studentId: studentId, moduleId: CONFIG.MODULE_ID,
+                    currentStep: state.currentStep,
+                    completedSteps: Array.from(state.completedSteps),
+                    completedTimes: Array.from(state.completedTimes),
+                    timestamp: new Date().toISOString()
+                })
+            });
+        } catch (e) { console.log('Error saving:', e); }
+    }
+
+    // ==========================================
+    // UI / NAVIGATION
+    // ==========================================
+    function updateProgress() {
+        var pct = Math.round((state.completedSteps.size / CONFIG.TOTAL_STEPS) * 100);
+        document.getElementById('progress-bar').style.width = pct + '%';
+        document.getElementById('progress-text').textContent = pct + '%';
+    }
+
+    function initStepper() {
+        document.getElementById('stepper').innerHTML = CONFIG.STEP_NAMES.map(function(name, i) {
+            return '<div class="stepper-item flex items-center cursor-pointer hover:bg-gray-50 rounded-lg p-1.5 transition-colors" data-step="' + (i + 1) + '">' +
+                '<div class="stepper-circle w-7 h-7 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500 bg-white">' + (i + 1) + '</div>' +
+                '<span class="ml-2 text-xs text-gray-600 hidden lg:block">' + name + '</span></div>';
+        }).join('');
+    }
+
+    function goToStep(step) {
+        if (step < 1 || step > CONFIG.TOTAL_STEPS) return;
+        document.querySelectorAll('.step-content').forEach(function(c) { c.classList.remove('active'); });
+        var content = document.querySelector('.step-content[data-step="' + step + '"]');
+        if (content) content.classList.add('active');
+        state.currentStep = step;
+        state.timerCompleted = state.completedTimes.has(step);
+        updateStepper();
+        updateNavigationButtons();
+        document.getElementById('step-indicator').textContent = 'Paso ' + step + ' de ' + CONFIG.TOTAL_STEPS;
+        saveProgress();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        hideTimerCompleteMessage();
+        startTimer(step);
+        loadStudentNote();
+    }
+
+    function canAdvance() { return true; }
+
+    function navigateStep(dir) {
+        if (dir > 0 && !canAdvance()) { showNotification('Debes esperar el tiempo.'); return; }
+        if (dir > 0) { state.completedSteps.add(state.currentStep); checkBadges(); }
+        goToStep(state.currentStep + dir);
+        updateProgress();
+    }
+
+    function updateStepper() {
+        document.querySelectorAll('.stepper-item').forEach(function(item) {
+            var step = parseInt(item.dataset.step);
+            item.classList.remove('active', 'completed', 'time-completed');
+            if (step === state.currentStep) item.classList.add('active');
+            else if (state.completedSteps.has(step)) {
+                item.classList.add('completed');
+                item.querySelector('.stepper-circle').innerHTML = '<i class="fas fa-check text-white text-xs"></i>';
+            }
+            if (state.completedTimes.has(step)) item.classList.add('time-completed');
+        });
+    }
+
+    function updateNavigationButtons() {
+        document.getElementById('prev-btn').disabled = state.currentStep === 1;
+        var nextBtn = document.getElementById('next-btn');
+        var canProceed = canAdvance();
+        nextBtn.disabled = !canProceed;
+        if (state.currentStep === CONFIG.TOTAL_STEPS) {
+            nextBtn.innerHTML = canProceed ? 'Finalizar <i class="fas fa-flag-checkered ml-2"></i>' : '<i class="fas fa-lock mr-2"></i>Finalizar';
+        } else {
+            nextBtn.innerHTML = canProceed ? 'Siguiente <i class="fas fa-arrow-right ml-2"></i>' : '<i class="fas fa-clock mr-2"></i>Espera';
+        }
+        if (canProceed) { nextBtn.classList.remove('bg-gray-400','cursor-not-allowed'); nextBtn.classList.add('bg-emerald-600','hover:bg-emerald-700'); }
+        else { nextBtn.classList.remove('bg-emerald-600','hover:bg-emerald-700'); nextBtn.classList.add('bg-gray-400','cursor-not-allowed'); }
+    }
+
+    // ==========================================
+    // QUIZ
+    // ==========================================
+    function handleQuizAnswer(e) {
+        var option = e.target;
+        if (!option.classList.contains('quiz-option')) return;
+        var question = option.closest('.quiz-question');
+        var qNum = question.dataset.question;
+        if (state.quizAnswers[qNum]) return;
+        var isCorrect = option.dataset.correct === 'true';
+        option.classList.add(isCorrect ? 'correct' : 'incorrect');
+        if (!isCorrect) question.querySelectorAll('.quiz-option').forEach(function(opt) { if (opt.dataset.correct === 'true') opt.classList.add('correct'); });
+        var feedback = question.querySelector('.quiz-feedback');
+        feedback.classList.remove('hidden');
+        feedback.classList.add(isCorrect ? 'bg-green-100' : 'bg-red-100');
+        feedback.innerHTML = isCorrect ? '<i class="fas fa-check-circle text-green-600 mr-1"></i>Correcto!' : '<i class="fas fa-times-circle text-red-600 mr-1"></i>Incorrecto';
+        state.quizAnswers[qNum] = isCorrect;
+        saveQuizAnswerOnline(qNum, option.textContent, isCorrect);
+        saveProgress();
+        checkQuizComplete();
+    }
+
+    function checkFillBlank(qNum, correctAnswer) {
+        if (state.quizAnswers[qNum]) return;
+        var input = document.getElementById('fill-' + qNum);
+        var answer = input.value.trim().toUpperCase();
+        var isCorrect = answer === correctAnswer.toUpperCase();
+        var question = input.closest('.quiz-question');
+        var feedback = question.querySelector('.quiz-feedback');
+        input.style.borderColor = isCorrect ? '#10b981' : '#ef4444';
+        input.disabled = true;
+        feedback.classList.remove('hidden');
+        feedback.classList.add(isCorrect ? 'bg-green-100' : 'bg-red-100');
+        feedback.innerHTML = isCorrect ? '<i class="fas fa-check-circle text-green-600 mr-1"></i>Correcto!' : '<i class="fas fa-times-circle text-red-600 mr-1"></i>Incorrecto. Respuesta: ' + correctAnswer;
+        state.quizAnswers[qNum] = isCorrect;
+        saveQuizAnswerOnline(qNum, answer, isCorrect);
+        saveProgress();
+        checkQuizComplete();
+    }
+
+    function checkQuizComplete() {
+        var total = document.querySelectorAll('.quiz-question').length;
+        if (Object.keys(state.quizAnswers).length === total) {
+            var correct = Object.values(state.quizAnswers).filter(function(v) { return v; }).length;
+            document.getElementById('quiz-results').classList.remove('hidden');
+            document.getElementById('quiz-score').textContent = 'Obtuviste ' + correct + ' de ' + total + ' (' + Math.round(correct/total*100) + '%)';
+            var review = document.getElementById('quiz-review');
+            if (correct < total) {
+                review.innerHTML = '<p class="mt-2 opacity-80">Áreas a repasar: ' + (correct < total * 0.7 ? 'Revisa todos los pasos de agencias (9-12)' : 'Enfócate en los escenarios prácticos') + '</p>';
+            }
+            state.completedSteps.add(CONFIG.TOTAL_STEPS);
+            if (correct === total) state.achievements.add('quiz_perfect');
+            checkBadges();
+            updateProgress();
+            saveProgress();
+        }
+    }
+
+    async function saveQuizAnswerOnline(questionNum, answer, isCorrect) {
+        if (!state.isOnlineMode) return;
+        var studentId = localStorage.getItem('tebi1105_studentId');
+        if (!studentId) return;
+        try {
+            await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
+                method: 'POST', mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'saveQuizAnswer', studentId: studentId, moduleId: CONFIG.MODULE_ID, questionNum: questionNum, answer: answer, isCorrect: isCorrect, timestamp: new Date().toISOString() })
+            });
+        } catch (e) { console.log('Error saving quiz:', e); }
+    }
+
+    // ==========================================
+    // KEYBOARD NAV
+    // ==========================================
+    document.addEventListener('keydown', function(e) {
+        var tag = document.activeElement.tagName.toLowerCase();
+        if (tag === 'textarea' || tag === 'input') return;
+        if (e.key === 'ArrowRight') navigateStep(1);
+        else if (e.key === 'ArrowLeft') navigateStep(-1);
+    });
+
+    // ==========================================
+    // EVENT LISTENERS
+    // ==========================================
+    function setupEventListeners() {
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            var studentId = document.getElementById('student-id').value.trim().toUpperCase();
+            if (studentId) {
+                var btn = e.target.querySelector('button');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Verificando...';
+                btn.disabled = true;
+                await verifyStudentOnline(studentId);
+                btn.innerHTML = '<span>Ingresar</span> <i class="fas fa-arrow-right ml-2"></i>';
+                btn.disabled = false;
+            }
+        });
+        document.getElementById('prev-btn').addEventListener('click', function() { navigateStep(-1); });
+        document.getElementById('next-btn').addEventListener('click', function() { navigateStep(1); });
+        document.querySelectorAll('.quiz-option').forEach(function(option) { option.addEventListener('click', handleQuizAnswer); });
+        document.getElementById('stepper').addEventListener('click', function(e) {
+            var item = e.target.closest('.stepper-item');
+            if (item) {
+                var step = parseInt(item.dataset.step);
+                if (step < state.currentStep || state.completedTimes.has(step) || state.completedSteps.has(step)) goToStep(step);
+                else if (step !== state.currentStep) showNotification('Completa los pasos anteriores primero.');
+            }
+        });
+    }
+
+    // ==========================================
+    // INIT
+    // ==========================================
+    document.addEventListener('DOMContentLoaded', function() {
+        initStepper();
+        setupEventListeners();
+        initDragDrop();
+        var savedId = localStorage.getItem('tebi1105_studentId');
+        if (savedId) verifyStudentOnline(savedId);
+    });
+    </script>
+</body>
+</html>
